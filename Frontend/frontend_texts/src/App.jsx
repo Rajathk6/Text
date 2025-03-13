@@ -3,6 +3,7 @@ import reactLogo from './assets/react.svg'
 import viteLogo from '/vite.svg'
 import './App.css'
 import toast, { Toaster } from 'react-hot-toast';
+import LoginPage from './Component/LoginPage';
 
 function App() {
   function trigger() {
@@ -10,14 +11,7 @@ function App() {
   }
   return (
     <>
-      <div>
-        <h1>this is react page</h1>
-        <button onClick={trigger}>click</button>
-        <Toaster
-          position="top-right"
-          reverseOrder={false}
-        />
-      </div>
+      <LoginPage/>
     </>
   )
 }
