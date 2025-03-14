@@ -1,68 +1,163 @@
-:root {
-  font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
-  line-height: 1.5;
-  font-weight: 400;
-
-  color-scheme: light dark;
-  color: rgba(255, 255, 255, 0.87);
-  background-color: #242424;
-
-  font-synthesis: none;
-  text-rendering: optimizeLegibility;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
-}
-
-a {
-  font-weight: 500;
-  color: #646cff;
-  text-decoration: inherit;
-}
-a:hover {
-  color: #535bf2;
-}
-
 body {
   margin: 0;
   display: flex;
-  place-items: center;
-  min-width: 320px;
-  min-height: 100vh;
+  font-family: 'Open Sans', sans-serif;
+  background: linear-gradient(135deg, #1a1a2e, #16213e);
 }
 
-h1 {
-  font-size: 3.2em;
-  line-height: 1.1;
+        /* USER AUTHENTICATION FOR TEXT */
+.main-auth-container {
+  margin-top: 15vh;
+  margin-left: 45vh;
+  text-align: center;
+  flex-direction: column;
+  border: 2px solid white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, #ffffff, #f8f9fa);
+  color: black;
+  border-radius: 20px;
+  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1), 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
-button {
-  border-radius: 8px;
-  border: 1px solid transparent;
-  padding: 0.6em 1.2em;
-  font-size: 1em;
-  font-weight: 500;
-  font-family: inherit;
-  background-color: #1a1a1a;
+.app-logo {
+  display: flex;
+  flex-direction: row;
+  margin-top: -15px;
+  padding: 0px;
+  align-items: center;
+  gap: 10px;
+}
+
+.app-logo img {
+  height: 4em;
+  width: 3em;
+}
+
+.app-logo p {
+  font-size: 3rem;
+}
+
+.auth-form-container {
+  
+  display: flex;
+  flex-direction: column;
+  padding: 0px 20px;
+}
+
+.auth-form-container h2 {
+  margin-top: -10px;
+  font-size: 2rem;
+}
+
+.auth-form-container input {
+  margin: 0px 30px;
+  border: 0.5px double rgb(193, 191, 195);
+  border-radius: 3px;
+  height: 3rem;
+  margin-bottom: -5px;
+  font-size: 1.3rem;
+  background: linear-gradient(170deg, #f4f4f4, #ffffff);
+  outline: none;
+  transition: all 0.3s ease-in-out;
+}
+
+.auth-form-container input:focus {
+  background: linear-gradient(135deg, #ffffff, #e8e8e8);
+  box-shadow: 0px 0px 5px rgba(0, 123, 255, 0.5);
+}
+
+.loginbutton {
+  border-style: none;
+  border-radius: 3px;
+  height: 3rem;
+  font-size: 1.3rem;
+  width: 7rem;
+  color: #ffffff;
+  background: linear-gradient(135deg, #007bff, #0a57a9);
+  margin-bottom: 10px;
+  margin-top: -5px;
+}
+
+.loginbutton:hover {
+  background: linear-gradient(135deg, #0056b3, #003d82);
+}
+
+
+          /* DASHBOARD VIEW FOR TEXT  */
+
+
+.parent-dashboard {
+  
+  display: flex;
+  justify-content: space-between;
+  background-color: #f4f4f4;
+}
+
+.dashboard-nav { 
+  height: 100vh;
+  width: 60vh;
+  background: linear-gradient(135deg, #374151, #4b5563);
+  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1), 0 2px 10px rgba(0, 0, 0, 0.2);
+}
+
+.user-chat {
+  flex: 1;
+  height: 100vh;
+  width: 130vh;
+  background: linear-gradient(135deg, #d9d7d7, #d2dbe7);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+        /* INDIVIUAL CHAT AREA */
+
+        /* texting area */
+      
+.text-area {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 100%;
+  background: white; /* Add contrast */
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+}
+
+.text-area input {
+    height: 3em;
+    width: 100%;
+    background: linear-gradient(170deg, #f2f5f6, #ffffff);
+    outline: none;
+    transition: all 0.3s ease-in-out;
+    border: none;
+    font-size: 1.2rem;
+}
+
+.text-area input:focus { 
+  background: linear-gradient(105deg, #ffffff, #ebeef1);
+  box-shadow: 0px 0px 5px rgba(0, 123, 255, 0.5);
+}
+
+.text-area button {
+  height: 3rem;
+  width: 3rem;
+  border-radius: 100%;
+  border: none;
+  background-color: transparent;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+.text-area-icons {
+  font-size: 1.7rem;
   cursor: pointer;
-  transition: border-color 0.25s;
-}
-button:hover {
-  border-color: #646cff;
-}
-button:focus,
-button:focus-visible {
-  outline: 4px auto -webkit-focus-ring-color;
 }
 
-@media (prefers-color-scheme: light) {
-  :root {
-    color: #213547;
-    background-color: #ffffff;
-  }
-  a:hover {
-    color: #747bff;
-  }
-  button {
-    background-color: #f9f9f9;
-  }
+.gif {
+  font-size: 2rem;
 }

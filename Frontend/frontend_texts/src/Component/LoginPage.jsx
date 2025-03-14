@@ -1,20 +1,20 @@
 
 function LoginPage() {
     return (
-        <div>
-            <div className="app-details">
-                <a href="/" ><img src="./src/assets/react.svg" alt="" /></a> 
-                <h1>Text</h1>
+        <div className="main-auth-container">
+            <div className="app-logo">
+                <a href="/" ><img src="./src/assets/react.svg" alt="" />  </a>
+                <p>Text</p>
+                
             </div>
             <div className="auth-form-container" >
-                <h2>Login or create your account with Text</h2>
-                <input type="text" placeholder="Enter UserName: "/>
-                <input type="text" placeholder="Enter Password:"/> <br />
-                <button>Log in </button>
+                <h2>Login or create your account with <br />Text</h2>
+                <input type="text" placeholder="Enter UserName "/> <br />
+                <input type="text" placeholder="Enter Password "/> <br />
+                <a href="/home"><button className="loginbutton">Log in </button></a>
             </div>
         </div>
     )
-
 }
 
 export default LoginPage
