@@ -1,6 +1,10 @@
+import { useState } from "react";
 import { TbBubbleText } from "react-icons/tb";
 
 function LoginPage() {
+    const [username, setUserName] = useState()
+    const [password, setPassword] = useState()
+
     return (
         <div className="main-auth-container">
             <div className="app-logo">
