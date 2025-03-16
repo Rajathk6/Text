@@ -24,10 +24,10 @@ body {
 .app-logo {
   display: flex;
   flex-direction: row;
-  margin-top: -15px;
+  margin-bottom: 20px;
   padding: 0px;
   align-items: center;
-  gap: 10px;
+  gap: 7px;
 }
 
 .app-logo img {
@@ -37,6 +37,14 @@ body {
 
 .app-logo p {
   font-size: 3rem;
+}
+
+.main-text-logo {
+  background: transparent;
+  border-style: none;
+  cursor: pointer;
+  padding-top: 10px;
+  font-size: 2.8rem;
 }
 
 .auth-form-container {
@@ -112,7 +120,83 @@ body {
   position: relative;
 }
 
+.search-friends {
+  background: linear-gradient(170deg, #f2f5f6, #ffffff);
+  height: 8vh;
+  width: 59vh;
+  display: flex;
+  align-items: center;
+  justify-content: start;
+  gap: 5px;
+  padding-left: 4px;
+}
+
+.search-friends button {
+  font-size: 1.7rem;
+  background: transparent;
+  border-style: none;
+}
+
+.search-friends input {
+  width: 100%;
+  height: 7.3vh;
+  font-size: 1.3rem;
+  background: linear-gradient(170deg, #f2f5f6, #ffffff);
+  outline: none;
+  transition: all 0.3s ease-in-out;
+  border: none;
+}
+
+.search-friends input:focus {
+  background: linear-gradient(105deg, #ffffff, #ebeef1);
+  box-shadow: 0px 0px 5px rgba(0, 123, 255, 0.5);
+}
+
         /* INDIVIUAL CHAT AREA */
+
+        /* user info */
+
+.user-info {
+  background: linear-gradient(135deg, #f5f0e1, #fffaf0);
+  height: 8vh;
+  width: 130vh;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: absolute;
+} 
+
+.user-info button {
+  background: transparent;
+  border-style: none;
+  font-size: 2rem;
+}
+
+.user-status {
+  display: flex;  
+  flex-direction: column; 
+  align-items: flex-start; 
+  justify-content: center;
+  margin-top: 5px;
+  gap: 2px;
+}
+
+.user-status h3, p {
+  margin: 0;
+}
+
+.user-status h3 {
+  font-size: 1.2rem;
+}
+
+.user-info .avatar {
+  font-size: 3rem;
+  padding-top: 10px;
+}
+
+.user-info .search-text {
+  margin-left: 90vh;
+}
 
         /* texting area */
       
@@ -121,11 +205,11 @@ body {
   bottom: 0;
   left: 0;
   width: 100%;
-  background: white; /* Add contrast */
+  background: white;
   display: flex;
   justify-content: space-around;
   align-items: center;
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow */
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); 
 }
 
 .text-area input {

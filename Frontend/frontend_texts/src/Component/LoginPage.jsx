@@ -1,17 +1,24 @@
+import { TbBubbleText } from "react-icons/tb";
 
 function LoginPage() {
     return (
         <div className="main-auth-container">
             <div className="app-logo">
-                <a href="/" ><img src="./src/assets/react.svg" alt="" />  </a>
+                <a href="/" >
+                <button className="main-text-logo">
+                    <TbBubbleText />
+                </button>  </a>
                 <p>Text</p>
                 
             </div>
             <div className="auth-form-container" >
                 <h2>Login or create your account with <br />Text</h2>
+                <form action="">
                 <input type="text" placeholder="Enter UserName "/> <br />
                 <input type="text" placeholder="Enter Password "/> <br />
-                <a href="/home"><button className="loginbutton">Log in </button></a>
+                <button className="loginbutton">Log in </button>
+                </form>
+                
             </div>
         </div>
     )
