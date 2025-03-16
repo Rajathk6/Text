@@ -17,7 +17,7 @@ public class UserService {
     }
 
     public ResponseEntity<?> registerUser(User newUser) {
-        if (newUser != userRepo.findByUserName(newUser.getUsername())) {
+        if (newUser != userRepo.findByUsername(newUser.getUsername())) {
             newUser.setPassword(passwordEncoder.encode(newUser.getPassword()));
             userRepo.save(newUser);
 

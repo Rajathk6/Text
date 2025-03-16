@@ -37,14 +37,18 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         return http
+                .authorizeHttpRequests(authorize -> authorize
+                        .requestMatchers("/", "/dashboard").permitAll()
+                        .anyRequest().authenticated()
+                )           
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.IF_REQUIRED))
                 .formLogin(form -> form
-                        .loginPage("/login")
+                        .loginPage("user/login")
                         .loginProcessingUrl("perform_login")
                         .usernameParameter("username")
                         .passwordParameter("password")
                         .defaultSuccessUrl("/dashboard")
-                        .failureUrl("/login?error=true")
+                        .failureUrl("user/login?error=true")
                         .permitAll()        
                 )           
                 .build();

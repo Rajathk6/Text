@@ -18,10 +18,10 @@ public class UserController {
         this.userService = userService;
     }
 
-    @GetMapping("/login")
-    public ResponseEntity<?> userLogin(@RequestBody User User) {
-        return userService.registerUser(User);
-    }
+    // @GetMapping("/login")
+    // public ResponseEntity<?> userLogin(@RequestBody User User) {
+    //     return userService.registerUser(User);
+    // }
 
     @GetMapping("/register")
     public ResponseEntity<?> userRegister(@RequestBody User newUser) {

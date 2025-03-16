@@ -8,7 +8,7 @@ import com.Text.Text_chat_app.Model.User;
 @Repository
 public interface UserRepo extends JpaRepository<User, Long>{
 
-    User findByUserName(String username);
+    User findByUsername(String username);
 
     User findByPassword(String password);
 
