@@ -48,7 +48,6 @@ body {
 }
 
 .auth-form-container {
-  
   display: flex;
   flex-direction: column;
   padding: 0px 20px;
@@ -59,19 +58,19 @@ body {
   font-size: 2rem;
 }
 
-.auth-form-container input {
-  margin: 0px 30px;
+.form-attributes input {
+  margin: 10px 30px;
   border: 0.5px double rgb(193, 191, 195);
   border-radius: 3px;
   height: 3rem;
-  margin-bottom: -5px;
+  width: 17rem;
   font-size: 1.3rem;
   background: linear-gradient(170deg, #f4f4f4, #ffffff);
   outline: none;
   transition: all 0.3s ease-in-out;
 }
 
-.auth-form-container input:focus {
+.form-attributes input:focus {
   background: linear-gradient(135deg, #ffffff, #e8e8e8);
   box-shadow: 0px 0px 5px rgba(0, 123, 255, 0.5);
 }
@@ -85,7 +84,7 @@ body {
   color: #ffffff;
   background: linear-gradient(135deg, #007bff, #0a57a9);
   margin-bottom: 10px;
-  margin-top: -5px;
+  
 }
 
 .loginbutton:hover {
