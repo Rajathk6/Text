@@ -1,11 +1,9 @@
 import axios from "axios"
 
-function ApiMapping() {
-    const API = axios.create(
-        {
-            baseURL: "http://localhost:8080/api",
-        }
-    )
-}
+const ApiMapping = axios.create (
+    {
+        baseURL: "http://localhost:8080",
+    }
+)
 
 export default ApiMapping
