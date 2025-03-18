@@ -9,6 +9,7 @@ body {
 .main-auth-container {
   margin-top: 15vh;
   margin-left: 45vh;
+  width: 90vh;
   text-align: center;
   flex-direction: column;
   border: 2px solid white;

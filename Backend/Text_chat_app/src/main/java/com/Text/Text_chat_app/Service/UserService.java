@@ -20,14 +20,23 @@ public class UserService {
 
     public ResponseEntity<?> authenticateUser(User loginRequest) {
         User user = userRepo.findByUsername(loginRequest.getUsername());
-        if (user == null) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
+        if (user == null ) {
+            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("user not found");
         }
+        // if password incorrect
         if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
-        // At this point, you might create and return a JWT token or another success response.
+        // existing users (IMPLEMENT JWT)
         return ResponseEntity.ok("Login successful");
+        
+        
+    }
+
+    public ResponseEntity<?> registerUser(User user) {
+        user.setPassword(passwordEncoder.encode(user.getPassword()));
+        userRepo.save(user);
+        return ResponseEntity.status(HttpStatus.ACCEPTED).body("New user registered");
     }
 
 }
