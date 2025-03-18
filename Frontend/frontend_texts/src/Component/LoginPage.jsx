@@ -52,7 +52,7 @@ function LoginPage() {
             const response = await responsePromise;
             console.log(`${isLogin ? "Login" : "Registration"} Successful:`, response.data);
 
-            if (isLogin) navigate("/dashboard"); // Redirect to dashboard after login
+            if (isLogin) navigate("/dashboard", {state: {username}}); // Redirect to dashboard after login
 
         } catch (error) {
             console.error("Error:", error.response?.data || error.message);

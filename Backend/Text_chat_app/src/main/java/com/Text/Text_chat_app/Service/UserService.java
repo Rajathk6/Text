@@ -28,9 +28,7 @@ public class UserService {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
         }
         // existing users (IMPLEMENT JWT)
-        return ResponseEntity.ok("Login successful");
-        
-        
+        return ResponseEntity.ok("Login successful");       
     }
 
     public ResponseEntity<?> registerUser(User user) {
@@ -38,5 +36,4 @@ public class UserService {
         userRepo.save(user);
         return ResponseEntity.status(HttpStatus.ACCEPTED).body("New user registered");
     }
-
 }

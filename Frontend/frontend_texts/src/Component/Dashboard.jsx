@@ -1,10 +1,13 @@
 import { BsSendFill, BsThreeDots } from "react-icons/bs";
-import { MdOutlineGif, MdPermMedia, MdEmojiEmotions } from "react-icons/md";
+import { MdOutlineGif, MdPermMedia, MdEmojiEmotions, MdNotListedLocation } from "react-icons/md";
 import { FaCameraRetro } from "react-icons/fa";
 import { RxAvatar } from "react-icons/rx";
 import { FiSearch } from "react-icons/fi";
+import { useLocation } from "react-router";
 
 function Dashboard() {
+    const location = useLocation()
+    const {username} = location.state || {}
     return (
         <div className="parent-dashboard">  
 
@@ -36,7 +39,7 @@ function Dashboard() {
                         <RxAvatar />
                     </button>
                     <div className="user-status">
-                        <h3>User 1</h3>
+                        <h3>{username}</h3>
                         <p>online</p>
                     </div>
                     
