@@ -6,7 +6,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import com.Text.Text_chat_app.Model.User;
 
-@Transactional
 @Repository
 public interface UserRepo extends JpaRepository<User, Long>{
 
