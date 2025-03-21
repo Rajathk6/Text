@@ -2,6 +2,8 @@ package com.Text.Text_chat_app.Service;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -10,25 +12,21 @@ import com.Text.Text_chat_app.Repository.UserRepo;
 
 @Service
 public class UserService {
-    UserRepo userRepo;
-    PasswordEncoder passwordEncoder;
+    private AuthenticationManager authManager;
+    private UserRepo userRepo;
+    private PasswordEncoder passwordEncoder;
 
-    public UserService(UserRepo userRepo, PasswordEncoder passwordEncoder) {
+    public UserService(UserRepo userRepo, AuthenticationManager authManager, PasswordEncoder passwordEncoder) {
         this.userRepo = userRepo;
+        this.authManager = authManager;
         this.passwordEncoder = passwordEncoder;
     }
 
-    public ResponseEntity<?> authenticateUser(User loginRequest) {
-        User user = userRepo.findByUsername(loginRequest.getUsername());
-        if (user == null ) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body("user not found");
-        }
-        // if password incorrect
-        if (!passwordEncoder.matches(loginRequest.getPassword(), user.getPassword())) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid credentials");
-        }
-        // existing users (IMPLEMENT JWT)
-        return ResponseEntity.ok("Login successful");       
+    public User authenticateUser(User loginRequest) {
+        authManager.authenticate(
+            new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())
+        );  
+        return userRepo.findByUsername(loginRequest.getUsername()); 
     }
 
     public ResponseEntity<?> registerUser(User user) {

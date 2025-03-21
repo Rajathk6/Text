@@ -11,13 +11,15 @@ function Dashboard() {
     const location = useLocation();
     const { username } = location.state || {};
 
-    const [friends, setFriends] = useState([]); // Store friends list
-
+    const [friends, setFriends] = useState([]); 
+    console.log(friends)
+    
     const friendListRetrieval = async () => {
         try {
-            const response = await ApiMapping.post("/api/dashboard/friends", { username });
+            const response = await ApiMapping.post("/api/dashboard/friends", { username});
+            console.log(response.data)
 
-            setFriends(response.data); // Update the state with received data
+            setFriends(response.data); 
         } catch (error) {
             console.error("Error:", error.response?.data || error.message);
         }
