@@ -6,6 +6,7 @@ import { FiSearch } from "react-icons/fi";
 import { useLocation } from "react-router";
 import ApiMapping from "../Config/ApiMapping";
 import { useState, useEffect } from "react";
+import toast, { Toaster } from "react-hot-toast";
 
 function Dashboard() {
     const location = useLocation();
@@ -15,23 +16,42 @@ function Dashboard() {
     console.log(friends)
     
     const friendListRetrieval = async () => {
-        try {
-            const response = await ApiMapping.post("/api/dashboard/friends", { username});
-            console.log(response.data)
+            try {
+            const friendresponse = await ApiMapping.post(
+                "/api/dashboard/friends", 
+                {}, 
+                {
+                  headers: { 
+                    "Content-Type": "application/json",
+                    "Authorization": `Bearer ${localStorage.getItem("token")}`  
+                  }
+                }
+              );
+              
+            console.log(friendresponse.data)
 
-            setFriends(response.data); 
+            setFriends(friendresponse.data); 
         } catch (error) {
-            console.error("Error:", error.response?.data || error.message);
+            console.error("Error:", error.friendresponse?.data || error.message);
         }
     };
 
     // Fetch friends list when the component mounts
+    let isMounted = true;
     useEffect(() => {
-        friendListRetrieval();
+        toast.promise(friendListRetrieval(),{
+            loading: "loading friends list",
+            success: () => isMounted ?"successfully loaded" : "",
+            error: "error loading friends list"
+        })
+        return () => {
+            isMounted = false
+        }
     }, []); 
 
     return (
         <div className="parent-dashboard">  
+            <Toaster />
             {/* Available friends */}
             <div className="dashboard-nav">
                 {/* Friends Search Option */}
@@ -45,7 +65,8 @@ function Dashboard() {
                     <ul>
                         {friends.length > 0 ? (
                             friends.map((friend, index) => (
-                                <li key={index}>{friend}</li>
+                                <li key={index}>
+                                    <p className="friend-avatar"><RxAvatar /></p>{friend}</li>
                             ))
                         ) : (
                             <p>No friends available</p>

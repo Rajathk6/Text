@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { TbBubbleText } from "react-icons/tb";
 import ApiMapping from "../Config/ApiMapping";
-import toast, { Toaster } from 'react-hot-toast';
+import toast, { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 
 function LoginPage() {
@@ -13,49 +13,56 @@ function LoginPage() {
     // Toggle Login/Register Mode
     const handleLogin = () => {
         setIsLogin(true);
-        setUsername("")
-        setPassword("")
-    }
+        setUsername("");
+        setPassword("");
+    };
     const handleRegister = () => {
         setIsLogin(false);
-        setUsername("")
-        setPassword("")
-    }
+        setUsername("");
+        setPassword("");
+    };
 
     const handleButtonClick = async (e) => {
         e.preventDefault();
-
+    
         if (!username || !password) {
             toast.error("Username and password are required!");
             return;
         }
-
+    
         const apiEndpoint = isLogin ? "/api/auth/login" : "/api/auth/register";
         const action = isLogin ? "Logging in..." : "Registering...";
         const successMessage = isLogin ? "Logged in successfully!" : "Registration successful!";
-        const errorMessage = isLogin
-            ? "Could not sign in. Please check your credentials."
-            : "Username already exists! Try a different one.";
-
+        const errorMessage = isLogin ? "Invalid credentials. Please try again." : "Username already exists!";
+    
         try {
-            const responsePromise = ApiMapping.post(apiEndpoint, { username, password });
-
-            await toast.promise(
-                responsePromise,
-                {
-                    loading: action,
-                    success: successMessage,
-                    error: errorMessage
-                }
-            );
-
+            const responsePromise = ApiMapping.post(apiEndpoint, { username, password }, {
+                headers: { "Content-Type": "application/json" }
+            });
+            
+            await toast.promise(responsePromise, {
+                loading: action,
+                success: successMessage,
+                error: errorMessage
+            });
+    
             const response = await responsePromise;
-            console.log(`${isLogin ? "Login" : "Registration"} Successful:`, response.data);
-
-            if (isLogin) navigate("/dashboard", {state: {username}});
-
+            console.log("API Response:", response.data);
+            
+            // Validate token before saving
+            if (response.data.token && /^[A-Za-z0-9-_=]+\.[A-Za-z0-9-_=]+\.[A-Za-z0-9-_.+/=]*$/.test(response.data.token)) {
+                localStorage.setItem("token", response.data.token);
+            } else {
+                console.error("Invalid token format:", response.data.token);
+            }
+    
+            localStorage.setItem("expiresAt", response.data.expiresIn);
+    
+            if (isLogin) navigate("/dashboard", { state: { username } });
+    
         } catch (error) {
             console.error("Error:", error.response?.data || error.message);
+            toast.error("Something went wrong. Please try again.");
         }
     };
 
@@ -74,10 +81,9 @@ function LoginPage() {
             <div className="auth-form-container">
                 <h2>{isLogin ? "Login" : "Register"} with Text</h2>
 
-                <form className="form-attributes" onSubmit={handleButtonClick}>
+                <form className="form-attributes">
                     <input
                         type="text"
-                        name="username"
                         placeholder="Enter Username"
                         value={username}
                         onChange={(e) => setUsername(e.target.value)}
@@ -86,14 +92,13 @@ function LoginPage() {
                     <br />
                     <input
                         type="password"
-                        name="password"
                         placeholder="Enter Password"
                         value={password}
                         onChange={(e) => setPassword(e.target.value)}
                         required
                     />
                     <br />
-                    <button type="submit" className="loginbutton">
+                    <button type="submit" className="loginbutton" onClick={handleButtonClick}>
                         {isLogin ? "Log in" : "Register"}
                     </button>
                 </form>

@@ -6,10 +6,9 @@ import {BrowserRouter, Route, Routes} from "react-router"
 import Router from './Config/Router.jsx'
 
 createRoot(document.getElementById('root')).render(
-  <StrictMode>
+  
     <BrowserRouter>
         <Router/>
     </BrowserRouter>
-    
-  </StrictMode>
+  
 )
