@@ -13,8 +13,10 @@ function Dashboard() {
     const { username } = location.state || {};
 
     const [friends, setFriends] = useState([]); 
-    console.log(friends)
-    
+    const [friendChat, setFriendChat] = useState(username)
+    const [senderText, setSenderText] = useState([])
+
+    console.log(senderText)
     const friendListRetrieval = async () => {
             try {
             const friendresponse = await ApiMapping.post(
@@ -49,6 +51,14 @@ function Dashboard() {
         }
     }, []); 
 
+    function handleMessageSent() {
+        const sendMessage = document.getElementById("placeholderText").value
+        document.getElementById("placeholderText").value = ""
+        if(sendMessage!=="") {
+            setSenderText(prevMessage => [...prevMessage, sendMessage])
+        }
+    }
+
     return (
         <div className="parent-dashboard">  
             <Toaster />
@@ -65,7 +75,7 @@ function Dashboard() {
                     <ul>
                         {friends.length > 0 ? (
                             friends.map((friend, index) => (
-                                <li key={index}>
+                                <li key={index} onClick={() => setFriendChat(friend)}>
                                     <p className="friend-avatar"><RxAvatar /></p>{friend}</li>
                             ))
                         ) : (
@@ -83,7 +93,7 @@ function Dashboard() {
                         <RxAvatar />
                     </button>
                     <div className="user-status">
-                        <h3>{username}</h3>
+                        <h3>{friendChat}</h3>
                         <p>Online</p>
                     </div>
                     <button className="search-text">
@@ -94,16 +104,30 @@ function Dashboard() {
                     </button>
                 </div>
 
+
                 {/* Chat display area */}
-                <div className="chat-display"></div>
+                <div className="chat-display">
+                    <div className="sender">
+                        <ul className="sender-header">
+                            {senderText.map((message, index) => (
+                            <li className="sender-message" key={index}>{message}</li>
+                            ))}
+                        </ul>
+                    </div>
+                </div>
+
 
                 {/* Texting area */}
                 <div className="text-area">
                     <button className="text-area-icons"><MdPermMedia /></button>
                     <button className="text-area-icons"><MdEmojiEmotions /></button>
                     
-                    <input type="text" placeholder="Enter your message..." />
-                    <button className="text-area-icons"><BsSendFill /></button>
+                    <input type="text" id="placeholderText" placeholder="Enter your message..." onKeyDown={(event) => {
+                        if (event.key === "Enter") {
+                            handleMessageSent()
+                        }
+                    }}/>
+                    <button onClick={handleMessageSent} className="text-area-icons"><BsSendFill /></button>
                     
                     <button className="text-area-icons gif"><MdOutlineGif /></button>
                     <button className="text-area-icons camera"><FaCameraRetro /></button>

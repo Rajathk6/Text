@@ -21,7 +21,7 @@ public class UserService {
         this.authManager = authManager;
         this.passwordEncoder = passwordEncoder;
     }
-
+    
     public User authenticateUser(User loginRequest) {
         authManager.authenticate(
             new UsernamePasswordAuthenticationToken(loginRequest.getUsername(), loginRequest.getPassword())

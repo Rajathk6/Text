@@ -1,6 +1,5 @@
 package com.Text.Text_chat_app.Repository;
 
-
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
