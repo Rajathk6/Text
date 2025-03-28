@@ -133,6 +133,7 @@ body {
   align-items: center;
   list-style: none;
   gap: 8px;
+  cursor: pointer;
 }
 
 .user-chat {

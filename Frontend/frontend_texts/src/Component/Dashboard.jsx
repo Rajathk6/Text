@@ -1,5 +1,5 @@
 import { BsSendFill, BsThreeDots } from "react-icons/bs";
-import { MdOutlineGif, MdPermMedia, MdEmojiEmotions } from "react-icons/md";
+import { MdPermMedia, MdEmojiEmotions } from "react-icons/md";
 import { FaCameraRetro } from "react-icons/fa";
 import { RxAvatar } from "react-icons/rx";
 import { FiSearch } from "react-icons/fi";
@@ -7,6 +7,7 @@ import { useLocation } from "react-router";
 import ApiMapping from "../Config/ApiMapping";
 import { useState, useEffect } from "react";
 import toast, { Toaster } from "react-hot-toast";
+import RenderGif from "./RenderGif";
 
 function Dashboard() {
     const location = useLocation();
@@ -129,7 +130,7 @@ function Dashboard() {
                     }}/>
                     <button onClick={handleMessageSent} className="text-area-icons"><BsSendFill /></button>
                     
-                    <button className="text-area-icons gif"><MdOutlineGif /></button>
+                    <RenderGif/>
                     <button className="text-area-icons camera"><FaCameraRetro /></button>
                 </div>
             </div>
