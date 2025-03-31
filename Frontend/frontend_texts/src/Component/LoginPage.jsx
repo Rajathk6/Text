@@ -59,7 +59,7 @@ function LoginPage() {
             localStorage.setItem("expiresAt", response.data.expiresIn);
     
             if (isLogin) navigate("/dashboard", { state: { username } });
-    
+            
         } catch (error) {
             console.error("Error:", error.response?.data || error.message);
             toast.error("Something went wrong. Please try again.");

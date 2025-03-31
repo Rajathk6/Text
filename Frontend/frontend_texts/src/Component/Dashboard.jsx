@@ -8,6 +8,7 @@ import ApiMapping from "../Config/ApiMapping";
 import { useState, useEffect } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import GifPicker from "gif-picker-react";
+import EmojiPicker from 'emoji-picker-react';
 
 function Dashboard() {
     const location = useLocation();
@@ -17,6 +18,7 @@ function Dashboard() {
     const [friendChat, setFriendChat] = useState(username)
     const [senderText, setSenderText] = useState([])
     const [isGif, setIsGif] = useState(false); 
+    const [isEmoji, setIsEmoji] = useState(false)
 
     const apiKey = import.meta.env.VITE_TENOR_API_KEY
     const friendListRetrieval = async () => {
@@ -55,17 +57,34 @@ function Dashboard() {
 
     function handleMessageSent() {
         document.getElementById("getGif").style.display = "none";
-        const sendMessage = document.getElementById("placeholderText").value
-        document.getElementById("placeholderText").value = ""
-
-        if(sendMessage!=="") {
-            setSenderText(prevMessage => [...prevMessage, {type: "text", content: sendMessage}])
+        document.getElementById("getEmoji").style.display = "none";
+        const sendMessage = document.getElementById("placeholderText").value;
+        document.getElementById("placeholderText").value = "";
+    
+        if (sendMessage.trim() !== "") {
+            const timestamp = new Date().toLocaleTimeString([], {
+                hour: "2-digit",
+                minute: "2-digit",
+                second: "2-digit",
+            });
+            setSenderText((prevMessage) => [
+                ...prevMessage,
+                { type: "text", content: sendMessage, time: timestamp },
+            ]);
         }
     }
+    
 
     function handleGifSelect(gif) {
-        setSenderText(prevMessage => [...prevMessage, {type: "gif", content: gif.url}])
+        const timestamp = new Date().toLocaleTimeString([], {hour: "2-digit", minute: "2-digit", second: "2-digit"})
+        setSenderText(prevMessage => [...prevMessage, {type: "gif", content: gif.url, time: timestamp}])
         document.getElementById("getGif").style.display = "none";
+    }
+
+    function handleEmojiSelect(emoji) {
+            const inputField = document.getElementById("placeholderText");
+            inputField.value += emoji.emoji;
+            inputField.focus();
     }
 
     function showGifBox() {
@@ -73,6 +92,12 @@ function Dashboard() {
         const giffy = document.getElementById("getGif")
         giffy.style.display = "block"
     }
+
+    function showEmojiBox() {
+        setIsEmoji(prevState => !prevState);
+        document.getElementById("getEmoji").style.display = isEmoji ? "none" : "block";
+    }
+    
 
     return (
         <div className="parent-dashboard">  
@@ -90,7 +115,9 @@ function Dashboard() {
                     <ul>
                         {friends.length > 0 ? (
                             friends.map((friend, index) => (
-                                <li key={index} onClick={() => setFriendChat(friend)}>
+                                <li key={index} onClick={() => {
+                                    setFriendChat(friend)
+                                }}>
                                     <p className="friend-avatar"><RxAvatar /></p>{friend}</li>
                             ))
                         ) : (
@@ -131,15 +158,30 @@ function Dashboard() {
                         bottom: "80px",
                         }}
                     >
-                    <GifPicker tenorApiKey={apiKey} onGifClick={(gif) => handleGifSelect(gif)} height="100%" width="35em"/>
+                    <GifPicker tenorApiKey={apiKey} contentFilter="off" onGifClick={(gif) => handleGifSelect(gif)} height="100%" width="35em"/>
                     </div>
+
+                            {/* EMOJI RENDERING */}
+                    <div id="getEmoji" style={{
+                        display: isEmoji ? "block" : "none",
+                        position: "fixed", 
+                        left: "350px",
+                        top : "10px",
+                        bottom: "80px",
+                    }}>
+                        <EmojiPicker onEmojiClick={(emoji) => handleEmojiSelect(emoji)} height="100%" width="30em"/>
+                    </div>
+
+
                             {/* SEND MESSAGE OR GIF */}
                     <div className="sender">
                         <ul className="sender-header">
                             {senderText.map((message, index) => (
                             <li className="sender-message" key={index}>
-                                {message.type === "text" ? message.content : 
-                                <img src={message.content} alt="GIF" style={{width: "200px"}}/>}
+                                {message.type === "text" ? message.content 
+                                    : message.type === "gif" ? <img src={message.content} alt="GIF" style={{width: "200px"}}/>
+                                    : <span style={{ fontSize: "1.5rem" }}>{message.content}</span>}
+                                    <p style={{fontSize: "0.75rem", fontFamily: "Open Sans, sans-serif"}}>{message.time}</p>
                             </li>
                             ))}
                         </ul>
@@ -150,7 +192,7 @@ function Dashboard() {
                 {/* Texting area */}
                 <div className="text-area">
                     <button className="text-area-icons"><MdPermMedia /></button>
-                    <button className="text-area-icons"><MdEmojiEmotions /></button>
+                    <button className="text-area-icons" onClick={showEmojiBox}><MdEmojiEmotions /></button>
                     
                     <input type="text" id="placeholderText" autoComplete="off" placeholder="Enter your message..." onKeyDown={(event) => {
                         if (event.key === "Enter") {
