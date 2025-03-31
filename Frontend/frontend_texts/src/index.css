@@ -239,7 +239,8 @@ body {
   margin-bottom: 60px;
   width:120vh;
   height: calc(100vh - 150px);
-  overflow-y: auto;         
+  overflow-y: auto;  
+  scroll-behavior: smooth;       
   padding: 10px;  
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;

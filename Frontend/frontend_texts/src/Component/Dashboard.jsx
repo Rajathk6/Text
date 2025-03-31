@@ -1,5 +1,5 @@
 import { BsSendFill, BsThreeDots } from "react-icons/bs";
-import { MdPermMedia, MdEmojiEmotions } from "react-icons/md";
+import { MdPermMedia, MdOutlineGif, MdEmojiEmotions } from "react-icons/md";
 import { FaCameraRetro } from "react-icons/fa";
 import { RxAvatar } from "react-icons/rx";
 import { FiSearch } from "react-icons/fi";
@@ -7,7 +7,7 @@ import { useLocation } from "react-router";
 import ApiMapping from "../Config/ApiMapping";
 import { useState, useEffect } from "react";
 import toast, { Toaster } from "react-hot-toast";
-import RenderGif from "./RenderGif";
+import GifPicker from "gif-picker-react";
 
 function Dashboard() {
     const location = useLocation();
@@ -16,8 +16,9 @@ function Dashboard() {
     const [friends, setFriends] = useState([]); 
     const [friendChat, setFriendChat] = useState(username)
     const [senderText, setSenderText] = useState([])
+    const [isGif, setIsGif] = useState(false); 
 
-    console.log(senderText)
+    const apiKey = import.meta.env.VITE_TENOR_API_KEY
     const friendListRetrieval = async () => {
             try {
             const friendresponse = await ApiMapping.post(
@@ -38,7 +39,7 @@ function Dashboard() {
             console.error("Error:", error.friendresponse?.data || error.message);
         }
     };
-
+    
     // Fetch friends list when the component mounts
     let isMounted = true;
     useEffect(() => {
@@ -53,11 +54,24 @@ function Dashboard() {
     }, []); 
 
     function handleMessageSent() {
+        document.getElementById("getGif").style.display = "none";
         const sendMessage = document.getElementById("placeholderText").value
         document.getElementById("placeholderText").value = ""
+
         if(sendMessage!=="") {
-            setSenderText(prevMessage => [...prevMessage, sendMessage])
+            setSenderText(prevMessage => [...prevMessage, {type: "text", content: sendMessage}])
         }
+    }
+
+    function handleGifSelect(gif) {
+        setSenderText(prevMessage => [...prevMessage, {type: "gif", content: gif.url}])
+        document.getElementById("getGif").style.display = "none";
+    }
+
+    function showGifBox() {
+        setIsGif(prevState => !prevState)
+        const giffy = document.getElementById("getGif")
+        giffy.style.display = "block"
     }
 
     return (
@@ -108,10 +122,25 @@ function Dashboard() {
 
                 {/* Chat display area */}
                 <div className="chat-display">
+                            {/* GIF RENDERING*/}
+                    <div className="gif-display" id="getGif" style={{ 
+                        display: isGif ? "block" : "none",
+                        position: "fixed", 
+                        left: "250px",
+                        top : "10px",
+                        bottom: "80px",
+                        }}
+                    >
+                    <GifPicker tenorApiKey={apiKey} onGifClick={(gif) => handleGifSelect(gif)} height="100%" width="35em"/>
+                    </div>
+                            {/* SEND MESSAGE OR GIF */}
                     <div className="sender">
                         <ul className="sender-header">
                             {senderText.map((message, index) => (
-                            <li className="sender-message" key={index}>{message}</li>
+                            <li className="sender-message" key={index}>
+                                {message.type === "text" ? message.content : 
+                                <img src={message.content} alt="GIF" style={{width: "200px"}}/>}
+                            </li>
                             ))}
                         </ul>
                     </div>
@@ -123,14 +152,14 @@ function Dashboard() {
                     <button className="text-area-icons"><MdPermMedia /></button>
                     <button className="text-area-icons"><MdEmojiEmotions /></button>
                     
-                    <input type="text" id="placeholderText" placeholder="Enter your message..." onKeyDown={(event) => {
+                    <input type="text" id="placeholderText" autoComplete="off" placeholder="Enter your message..." onKeyDown={(event) => {
                         if (event.key === "Enter") {
                             handleMessageSent()
                         }
                     }}/>
                     <button onClick={handleMessageSent} className="text-area-icons"><BsSendFill /></button>
+                    <button className="text-area-icons gif" onClick={showGifBox}><MdOutlineGif /></button>
                     
-                    <RenderGif/>
                     <button className="text-area-icons camera"><FaCameraRetro /></button>
                 </div>
             </div>
