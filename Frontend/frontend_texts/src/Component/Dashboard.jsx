@@ -158,7 +158,7 @@ function Dashboard() {
                         bottom: "80px",
                         }}
                     >
-                    <GifPicker tenorApiKey={apiKey} contentFilter="off" onGifClick={(gif) => handleGifSelect(gif)} height="100%" width="35em"/>
+                    <GifPicker tenorApiKey={apiKey} contentFilter="off" onGifClick={(gif) => handleGifSelect(gif)} height="100%" width="50em"/>
                     </div>
 
                             {/* EMOJI RENDERING */}
