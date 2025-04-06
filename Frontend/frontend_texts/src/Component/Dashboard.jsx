@@ -5,20 +5,23 @@ import { RxAvatar } from "react-icons/rx";
 import { FiSearch } from "react-icons/fi";
 import { useLocation } from "react-router";
 import ApiMapping from "../Config/ApiMapping";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import GifPicker from "gif-picker-react";
 import EmojiPicker from 'emoji-picker-react';
+import { Client, Stomp } from "@stomp/stompjs";
+import SockJS from "sockjs-client";
 
 function Dashboard() {
     const location = useLocation();
     const { username } = location.state || {};
 
-    const [friends, setFriends] = useState([]); 
-    const [friendChat, setFriendChat] = useState(username)
-    const [senderText, setSenderText] = useState([])
-    const [isGif, setIsGif] = useState(false); 
-    const [isEmoji, setIsEmoji] = useState(false)
+    const [friends, setFriends] = useState([]); // list of all friends i can text
+    const [friendChat, setFriendChat] = useState(null) // the current user i am texting
+    const [senderText, setSenderText] = useState([]) //. contains the messages sent 
+    const [isGif, setIsGif] = useState(false); // validates if gif is sent or not
+    const [isEmoji, setIsEmoji] = useState(false) // validates if emoji is sent or 
+    let stompClientRef = useRef(null);
 
     const apiKey = import.meta.env.VITE_TENOR_API_KEY
     const friendListRetrieval = async () => {
@@ -45,35 +48,86 @@ function Dashboard() {
     // Fetch friends list when the component mounts
     let isMounted = true;
     useEffect(() => {
-        toast.promise(friendListRetrieval(),{
-            loading: "loading friends list",
-            success: () => isMounted ?"successfully loaded" : "",
-            error: "error loading friends list"
-        })
+        const client = new Client({
+            webSocketFactory: () => new SockJS('http://localhost:8080/ws-endpoint'),
+            reconnectDelay: 5000,
+            heartbeatIncoming: 250000,
+            heartbeatOutgoing: 250000,
+            onConnect: (frame) => {
+              console.log('Connected: ' + frame);
+              client.subscribe("/topic/message", (message) => {
+                const receivedMessage = JSON.parse(message.body)
+                if (receivedMessage.receiver === username && receivedMessage.sender === friendChat) {
+                    console.log(receivedMessage);
+
+                    setSenderText((prevMessage) => [...prevMessage, {
+                        type: "text",
+                        content: receivedMessage.content,
+                        time: new Date().toLocaleTimeString([], {
+                            hour: "2-digit",
+                            minute: "2-digit",
+                            second: "2-digit",
+                        }),    
+                    },])
+                }
+              });
+            },
+            onStompError: (frame) => console.log("STOMP Error: " + frame.headers.message),
+            onWebSocketClose: (event) => console.log("WebSocket closed: ", event)
+          });
+          client.activate();
+          stompClientRef.current = client;   
+              
+        stompClientRef.current.onStompError = (frame) => {
+            console.log("STOMP Error" + frame.headers.message);
+        }
+
+        stompClientRef.current.onWebSocketClose = (event) => {
+            console.log("Websocket closed: " + event);
+        }
+        friendListRetrieval()
+        // toast.promise(,{
+        //     loading: "loading friends list",
+        //     success: () => isMounted ?"successfully loaded" : "",
+        //     error: "error loading friends list"
+        // })
         return () => {
             isMounted = false
+            if(stompClientRef.current?.active) {
+                stompClientRef.current.deactivate()
+            }
         }
     }, []); 
 
     function handleMessageSent() {
         document.getElementById("getGif").style.display = "none";
         document.getElementById("getEmoji").style.display = "none";
-        const sendMessage = document.getElementById("placeholderText").value;
-        document.getElementById("placeholderText").value = "";
     
-        if (sendMessage.trim() !== "") {
-            const timestamp = new Date().toLocaleTimeString([], {
-                hour: "2-digit",
-                minute: "2-digit",
-                second: "2-digit",
-            });
-            setSenderText((prevMessage) => [
-                ...prevMessage,
-                { type: "text", content: sendMessage, time: timestamp },
-            ]);
+        const sendMessage = document.getElementById("placeholderText").value.trim();
+        document.getElementById("placeholderText").value = "";
+        if (stompClientRef.current?.connected) {
+            console.log("websocket active")
+        } else {
+            console.log("websocket deactive")
+        }
+        if (sendMessage !== "") {
+            const messageObject = {
+                sender: username,
+                receiver: friendChat,
+                content: sendMessage
+            };
+    
+            if (stompClientRef.current && stompClientRef.current.connected) {
+                stompClientRef.current.publish({
+                    destination: "/app/chat",
+                    body: JSON.stringify(messageObject)
+                });
+            } else {
+                console.warn("WebSocket connection is not active. Reconnecting...");
+                toast.error("WebSocket disconnected. Refresh the page.");
+            }
         }
     }
-    
 
     function handleGifSelect(gif) {
         const timestamp = new Date().toLocaleTimeString([], {hour: "2-digit", minute: "2-digit", second: "2-digit"})
@@ -192,15 +246,15 @@ function Dashboard() {
                 {/* Texting area */}
                 <div className="text-area">
                     <button className="text-area-icons"><MdPermMedia /></button>
-                    <button className="text-area-icons" onClick={showEmojiBox}><MdEmojiEmotions /></button>
+                    <button className="text-area-icons"  disabled={!friendChat} onClick={showEmojiBox}><MdEmojiEmotions /></button>
                     
                     <input type="text" id="placeholderText" autoComplete="off" placeholder="Enter your message..." onKeyDown={(event) => {
                         if (event.key === "Enter") {
                             handleMessageSent()
                         }
                     }}/>
-                    <button onClick={handleMessageSent} className="text-area-icons"><BsSendFill /></button>
-                    <button className="text-area-icons gif" onClick={showGifBox}><MdOutlineGif /></button>
+                    <button onClick={handleMessageSent}  disabled={!friendChat} className="text-area-icons"><BsSendFill /></button>
+                    <button className="text-area-icons gif"  disabled={!friendChat} onClick={showGifBox}><MdOutlineGif /></button>
                     
                     <button className="text-area-icons camera"><FaCameraRetro /></button>
                 </div>

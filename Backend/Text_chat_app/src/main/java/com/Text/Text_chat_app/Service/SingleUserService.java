@@ -3,6 +3,7 @@ package com.Text.Text_chat_app.Service;
 import java.util.List;
 
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.Text.Text_chat_app.Model.User;
 import com.Text.Text_chat_app.Repository.MessageRepo;
@@ -19,15 +20,13 @@ public class SingleUserService {
         this.userrepo = userrepo;
     }
 
+    @Transactional
     public List<String> retrivefriends(String loggedUser) {
         User usercred = userrepo.findByUsername(loggedUser);
         if (usercred == null) {
             throw new RuntimeException("user not found" + loggedUser);
         }
-        System.out.println(usercred);
-        Long userId = usercred.getId();
-        List<User> friends =  messageDetails.findFriendsByUserId(userId);
-        System.out.println(userId);
+        List<User> friends =  messageDetails.findFriendsByUsername(loggedUser);
         System.out.println(friends);
         List<String> userfriends =  friends.stream().map(User::getUsername).toList();
         System.out.println(userfriends);
