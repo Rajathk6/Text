@@ -26,7 +26,7 @@ public interface MessageRepo extends JpaRepository<message, Long>{
        nativeQuery = true)
     List<User> findFriendsByUsername(String username);
 
-    message findByReceiverName(String receiver);
+    message findByReceiver(String receiver);
 
     @Query("SELECT m FROM message m WHERE (m.sender = :user1 AND m.receiver = :user2) OR (m.sender = :user2 AND m.receiver = :user1) ORDER BY m.timestamp ASC")
     List<message> findConversationBetweenUsers(@Param("user1") String user1, @Param("user2") String user2);
