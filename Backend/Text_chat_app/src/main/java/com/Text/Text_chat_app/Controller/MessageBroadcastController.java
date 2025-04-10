@@ -25,21 +25,22 @@ public class MessageBroadcastController {
     private SimpMessagingTemplate messagingTemplate;
 
     @MessageMapping("/chat")
-    public void broadcastMessage(MessageRequest messageReq) {
-        message newMessage = new message();
-        newMessage.setSender(messageReq.getSender());
-        newMessage.setReceiver(messageReq.getReceiver());
-        newMessage.setContent(messageReq.getContent());
-        newMessage.setTimestamp(LocalDateTime.now()); // Consider setting timestamp on the server
+    public String broadcastMessage() {
+        // message newMessage = new message();
+        // newMessage.setSender(messageReq.getSender());
+        // newMessage.setReceiver(messageReq.getReceiver());
+        // newMessage.setContent(messageReq.getContent());
+        // newMessage.setTimestamp(LocalDateTime.now()); // Consider setting timestamp on the server
 
-        messageRepo.save(newMessage);
+        // messageRepo.save(newMessage);
 
-        // Send to the receiver's topic
-        messagingTemplate.convertAndSendToUser(
-            messageReq.getReceiver(), 
-            "queue.messages", 
-            newMessage
-        );
+        // // Send to the receiver's topic
+        // messagingTemplate.convertAndSendToUser(
+        //     messageReq.getReceiver(), 
+        //     "queue.messages", 
+        //     newMessage
+        // );
+        return "this is backend";
     }
 }
 

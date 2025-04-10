@@ -9,7 +9,8 @@ import { useState, useEffect, useRef } from "react";
 import toast, { Toaster } from "react-hot-toast";
 import GifPicker from "gif-picker-react";
 import EmojiPicker from 'emoji-picker-react';
-import createStompClient from '../Config/Websocket.jsx';
+import SockJS from "sockjs-client";
+import { Stomp } from "@stomp/stompjs";
 
 function Dashboard() {
     const location = useLocation();
@@ -49,28 +50,29 @@ function Dashboard() {
     // Fetch friends list when the component mounts
 
     useEffect(() => {
-        //friendListRetrieval()
+        friendListRetrieval()
         console.log("🟢 useEffect running");
         console.log("🟡 Username in useEffect:", username);
-        console.log("🟣 Is createStompClient defined?", typeof createStompClient);
     
         console.log(username)
-        const client = createStompClient(username, (receivedMessage) => {
-            console.log("🟢 inside createstompClient callback", username);
-            const { sender, receiver, content } = JSON.parse(receivedMessage.body);
-            if (receiver === username) {
-                const timestamp = new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" });
-                setSenderText(prev => [...prev, { type: "text", content, time: timestamp }]);
-            }
+        const stompClient = Stomp.over(() => new SockJS("http://localhost:8080/ws-endpoint"));
+        console.log(stompClient)
+        stompClient.connect({}, () => {
+            console.log("✅ Connected to WebSocket");
+
+            stompClient.subscribe("/topic/message", (msg) => {
+                console.log("📩 Received message:", msg.body);
+                setMessage(msg.body);
+            });
+
+            stompClient.send("/app/chat", {}, "Hello from frontend");
         });
-    
-        stompClientRef.current = client;
-        setStompClient(client);
-    
+
         return () => {
-            if (client && client.connected) {
-                client.deactivate();
-                console.log("🛑 WebSocket connection closed");
+            if (stompClient && stompClient.connected) {
+                stompClient.disconnect(() => {
+                    console.log("❌ WebSocket Disconnected");
+                });
             }
         };
     }, [username]); 

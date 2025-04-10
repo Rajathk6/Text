@@ -20,7 +20,7 @@ public class SingleUserService {
         this.userrepo = userrepo;
     }
 
-    @Transactional
+    @Transactional(readOnly = true)
     public List<String> retrivefriends(String loggedUser) {
         User usercred = userrepo.findByUsername(loggedUser);
         if (usercred == null) {
