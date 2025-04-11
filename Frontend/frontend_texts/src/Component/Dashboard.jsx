@@ -1,242 +1,301 @@
-import { BsSendFill, BsThreeDots } from "react-icons/bs";
-import { MdPermMedia, MdOutlineGif, MdEmojiEmotions } from "react-icons/md";
-import { FaCameraRetro } from "react-icons/fa";
-import { RxAvatar } from "react-icons/rx";
-import { FiSearch } from "react-icons/fi";
-import { useLocation } from "react-router";
-import ApiMapping from "../Config/ApiMapping";
 import { useState, useEffect, useRef } from "react";
-import toast, { Toaster } from "react-hot-toast";
-import GifPicker from "gif-picker-react";
-import EmojiPicker from 'emoji-picker-react';
+import { useLocation } from "react-router-dom";
 import SockJS from "sockjs-client";
-import { Stomp } from "@stomp/stompjs";
+import { Client } from "@stomp/stompjs";
+import toast, { Toaster } from "react-hot-toast";
+import ApiMapping from "../Config/ApiMapping";
+import FriendsList from "./FriendsList";
+import ChatArea from "./ChatArea";
+import ConnectionStatus from "./ConnectionStatus"
 
 function Dashboard() {
     const location = useLocation();
     const { username } = location.state || {};
 
-    const [friends, setFriends] = useState([]); // list of all friends i can text
-    const [currentFriend, setCurrentFriend] = useState(null) // the current user i am texting
-    const [senderText, setSenderText] = useState([]) //. contains the messages sent 
-    const [isGif, setIsGif] = useState(false); // validates if gif is sent or not
-    const [isEmoji, setIsEmoji] = useState(false) // validates if emoji is sent or 
-    const [stompClient, setStompClient] = useState(null);
+    const [friends, setFriends] = useState([]); // list of friends retrived from backend
+    const [currentFriend, setCurrentFriend] = useState(null); // the friend i am texting
+    const [messages, setMessages] = useState({}); // Messages organized by conversation
+    const [senderText, setSenderText] = useState([]);
+    const [connectionStatus, setConnectionStatus] = useState("disconnected");
+    
+    const stompClientRef = useRef(null); // Use a ref to keep track of the STOMP client
+    const chatDisplayRef = useRef(null); // dynamically rendering the chat
 
-    let stompClientRef = useRef(null);
-
-    const apiKey = import.meta.env.VITE_TENOR_API_KEY
+    // Fetch friends list
     const friendListRetrieval = async () => {
-            try {
+        try {
             const friendresponse = await ApiMapping.post(
-                "/api/dashboard/friends", 
-                {}, 
+                "/api/dashboard/friends",
+                {},
                 {
-                  headers: { 
-                    "Content-Type": "application/json",
-                    "Authorization": `Bearer ${localStorage.getItem("token")}`  
-                  }
+                    headers: {
+                        "Content-Type": "application/json",
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`
+                    }
                 }
-              );
-              
-            console.log(friendresponse.data)
-
-            setFriends(friendresponse.data); 
+            );
+            setFriends(friendresponse.data);
         } catch (error) {
-            console.error("Error:", error.friendresponse?.data || error.message);
+            console.error("Error:", error?.response?.data || error.message);
+            toast.error("Failed to load friends list");
         }
     };
-    
-    // Fetch friends list when the component mounts
 
+    // Fetch conversation history when a friend is selected
     useEffect(() => {
-        friendListRetrieval()
-        console.log("🟢 useEffect running");
-        console.log("🟡 Username in useEffect:", username);
-    
-        console.log(username)
-        const stompClient = Stomp.over(() => new SockJS("http://localhost:8080/ws-endpoint"));
-        console.log(stompClient)
-        stompClient.connect({}, () => {
-            console.log("✅ Connected to WebSocket");
+        if (currentFriend && username) {
+            fetchConversationHistory(username, currentFriend);
+        }
+    }, [currentFriend, username]);
 
-            stompClient.subscribe("/topic/message", (msg) => {
-                console.log("📩 Received message:", msg.body);
-                setMessage(msg.body);
-            });
+    // Fetch conversation history between two users
+    const fetchConversationHistory = async (user1, user2) => {
+        try {
+            const response = await ApiMapping.get(
+                `/api/messages/conversation?user1=${user1}&user2=${user2}`,
+                {
+                    headers: {
+                        "Authorization": `Bearer ${localStorage.getItem("token")}`
+                    }
+                }
+            );
+            
+            // Format and set messages
+            const formattedMessages = response.data.map(msg => ({
+                type: "text",
+                content: msg.content,
+                sender: msg.sender,
+                receiver: msg.receiver,
+                time: new Date(msg.timestamp).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})
+            }));
+            
+            // Update messages for this conversation
+            setMessages(prev => ({
+                ...prev,
+                [`${user1}_${user2}`]: formattedMessages
+            }));
+            
+            // Update the current display
+            setSenderText(formattedMessages);
+        } catch (error) {
+            console.error("Error fetching conversation:", error);
+            toast.error("Failed to load conversation history");
+        }
+    };
 
-            stompClient.send("/app/chat", {}, "Hello from frontend");
+    // Setup WebSocket connection
+    useEffect(() => {
+        friendListRetrieval();
+        
+        if (!username) {
+            toast.error("Username not found. Please login again.");
+            return;
+        }
+
+        // Create and configure STOMP client
+        const client = new Client({
+            webSocketFactory: () => new SockJS("http://localhost:8080/ws-endpoint"),
+            connectHeaders: {
+                login: username,
+            },
+            debug: function(str) {
+                console.log("STOMP: " + str);
+            },
+            reconnectDelay: 5000,
+            heartbeatIncoming: 4000,
+            heartbeatOutgoing: 4000
         });
 
+        // Connection successful handler
+        client.onConnect = function() {
+            setConnectionStatus("connected");
+            toast.success("Connected to chat server!");
+            
+            // Subscribe to personal topic to receive messages
+            client.subscribe(`/user/${username}/queue/messages`, handleIncomingMessage);
+            
+            // Subscribe to broadcast messages
+            client.subscribe('/topic/public', handleBroadcastMessage);
+        };
+
+        // Connection error handler
+        client.onStompError = function(frame) {
+            setConnectionStatus("error");
+            console.error('STOMP error:', frame);
+            toast.error("Connection error: " + frame.headers.message);
+        };
+
+        // Store client in ref and activate
+        stompClientRef.current = client;
+        client.activate();
+
+        // Cleanup on component unmount
         return () => {
-            if (stompClient && stompClient.connected) {
-                stompClient.disconnect(() => {
-                    console.log("❌ WebSocket Disconnected");
-                });
+            if (client && client.active) {
+                client.deactivate();
             }
         };
-    }, [username]); 
+        
+    }, [username]);
 
-    function handleMessageSent() {
-        document.getElementById("getGif").style.display = "none";
-        document.getElementById("getEmoji").style.display = "none";
-    
-        const sendMessage = document.getElementById("placeholderText").value.trim();
-        document.getElementById("placeholderText").value = "";
-        if (stompClientRef.current?.connected) {
-            console.log("websocket active")
-        } else {
-            console.log("websocket deactive")
-        }
-        if (sendMessage !== "" && currentFriend) {
-            const messageObject = {
-                sender: username,
-                receiver: currentFriend,
-                content: sendMessage
+    // Handle incoming personal messages
+    const handleIncomingMessage = (message) => {
+        try {
+            const messageData = JSON.parse(message.body);
+            console.log("Received message:", messageData);
+            
+            // Format the message
+            const formattedMessage = {
+                type: "text",
+                content: messageData.content,
+                sender: messageData.sender,
+                receiver: messageData.receiver,
+                time: new Date().toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})
             };
-    
-            if (stompClientRef.current && stompClientRef.current.connected) {
-                stompClientRef.current.publish({
-                    destination: "/app/chat",
-                    body: JSON.stringify(messageObject)
-                });
-            } else {
-                console.warn("WebSocket connection is not active. Reconnecting...");
-                toast.error("WebSocket disconnected. Refresh the page.");
+            
+            // Update messages with the new message
+            setMessages(prev => {
+                // Create conversation key (works regardless of who's sender or receiver)
+                const conversationKey = [messageData.sender, messageData.receiver].sort().join("_");
+                
+                const conversationMessages = prev[conversationKey] || [];
+                return {
+                    ...prev,
+                    [conversationKey]: [...conversationMessages, formattedMessage]
+                };
+            });
+            
+            // If message is from current conversation partner, add to display
+            if (messageData.sender === currentFriend || 
+               (messageData.receiver === currentFriend && messageData.sender === username)) {
+                setSenderText(prev => [...prev, formattedMessage]);
             }
+            
+            // Notification for messages from others when not in that conversation
+            if (messageData.sender !== username && messageData.sender !== currentFriend) {
+                toast(`New message from ${messageData.sender}`, {
+                    icon: '📝'
+                });
+            }
+        } catch (error) {
+            console.error("Error handling message:", error);
         }
-    }
+    };
 
-    function handleGifSelect(gif) {
-        const timestamp = new Date().toLocaleTimeString([], {hour: "2-digit", minute: "2-digit", second: "2-digit"})
-        setSenderText(prevMessage => [...prevMessage, {type: "gif", content: gif.url, time: timestamp}])
-        document.getElementById("getGif").style.display = "none";
-    }
+    // Handle broadcast messages
+    const handleBroadcastMessage = (message) => {
+        const messageData = JSON.parse(message.body);
+        console.log("Broadcast message:", messageData);
+        
+        // Handle broadcasts (user online status, etc.)
+        if (messageData.type === 'STATUS') {
+            toast(`${messageData.user} is ${messageData.status}`, {
+                icon: messageData.status === 'ONLINE' ? '🟢' : '⚪'
+            });
+        }
+    };
 
-    function handleEmojiSelect(emoji) {
-            const inputField = document.getElementById("placeholderText");
-            inputField.value += emoji.emoji;
-            inputField.focus();
-    }
+    // Send a message
+    const handleMessageSent = (messageContent) => {
+        if (!messageContent || !currentFriend || !stompClientRef.current?.active) {
+            if (!stompClientRef.current?.active) {
+                toast.error("Not connected to chat server");
+            }
+            return;
+        }
+        
+        // Create message object
+        const messageObject = {
+            sender: username,
+            receiver: currentFriend,
+            content: messageContent,
+            timestamp: new Date().toISOString()
+        };
+        
+        // Add message to local display immediately (optimistic UI)
+        const formattedMessage = {
+            type: "text",
+            content: messageContent,
+            sender: username,
+            receiver: currentFriend,
+            time: new Date().toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})
+        };
+        
+        setSenderText(prev => [...prev, formattedMessage]);
+        
+        // Update messages state
+        setMessages(prev => {
+            const conversationKey = [username, currentFriend].sort().join("_");
+            const conversationMessages = prev[conversationKey] || [];
+            return {
+                ...prev,
+                [conversationKey]: [...conversationMessages, formattedMessage]
+            };
+        });
+        
+        // Send via WebSocket
+        stompClientRef.current.publish({
+            destination: "/app/chat.private",
+            body: JSON.stringify(messageObject)
+        });
+    };
 
-    function showGifBox() {
-        setIsGif(prevState => !prevState)
-        const giffy = document.getElementById("getGif")
-        giffy.style.display = "block"
-    }
+    // Scroll to bottom of chat when messages change
+    useEffect(() => {
+        if (chatDisplayRef.current) {
+            chatDisplayRef.current.scrollTop = chatDisplayRef.current.scrollHeight;
+        }
+    }, [senderText]);
 
-    function showEmojiBox() {
-        setIsEmoji(prevState => !prevState);
-        document.getElementById("getEmoji").style.display = isEmoji ? "none" : "block";
-    }
-    
+    // Handle GIF selection
+    const handleGifSelect = (gif) => {
+        const timestamp = new Date().toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})
+        const gifMessage = {
+            type: "gif",
+            content: gif.url,
+            sender: username,
+            receiver: currentFriend,
+            time: timestamp
+        };
+        
+        // Add to local display
+        setSenderText(prev => [...prev, gifMessage]);
+        
+        // Send via WebSocket if connected
+        if (stompClientRef.current?.active) {
+            stompClientRef.current.publish({
+                destination: "/app/chat.private",
+                body: JSON.stringify({
+                    sender: username,
+                    receiver: currentFriend,
+                    content: gif.url,
+                    type: "gif",
+                    timestamp: new Date().toISOString()
+                })
+            });
+        }
+    };
 
     return (
         <div className="parent-dashboard">  
             <Toaster />
-            {/* Available friends */}
-            <div className="dashboard-nav">
-                {/* Friends Search Option */}
-                <div className="search-friends">
-                    <button><FiSearch /></button>
-                    <input type="text" placeholder="Search for users..." />
-                </div>
-
-                {/* List of friends available to chat */}
-                <div className="available-friends">
-                    <ul>
-                        {friends.length > 0 ? (
-                            friends.map((friend, index) => (
-                                <li key={index} onClick={() => {
-                                    setCurrentFriend(friend)
-                                }}>
-                                    <p className="friend-avatar"><RxAvatar /></p>{friend}</li>
-                            ))
-                        ) : (
-                            <p>No friends available</p>
-                        )}
-                    </ul>
-                </div>
-            </div>
-
-            {/* Individual chatting area */}
-            <div className="user-chat">
-                {/* User info */}
-                <div className="user-info">
-                    <button className="avatar">
-                        <RxAvatar />
-                    </button>
-                    <div className="user-status">
-                        <h3>{currentFriend}</h3>
-                        <p>Online</p>
-                    </div>
-                    <button className="search-text">
-                        <FiSearch />
-                    </button>
-                    <button className="add-options">
-                        <BsThreeDots />
-                    </button>
-                </div>
-
-
-                {/* Chat display area */}
-                <div className="chat-display">
-                            {/* GIF RENDERING*/}
-                    <div className="gif-display" id="getGif" style={{ 
-                        display: isGif ? "block" : "none",
-                        position: "fixed", 
-                        left: "250px",
-                        top : "10px",
-                        bottom: "80px",
-                        }}
-                    >
-                    <GifPicker tenorApiKey={apiKey} contentFilter="off" onGifClick={(gif) => handleGifSelect(gif)} height="100%" width="50em"/>
-                    </div>
-
-                            {/* EMOJI RENDERING */}
-                    <div id="getEmoji" style={{
-                        display: isEmoji ? "block" : "none",
-                        position: "fixed", 
-                        left: "350px",
-                        top : "10px",
-                        bottom: "80px",
-                    }}>
-                        <EmojiPicker onEmojiClick={(emoji) => handleEmojiSelect(emoji)} height="100%" width="30em"/>
-                    </div>
-
-
-                            {/* SEND MESSAGE OR GIF */}
-                    <div className="sender">
-                        <ul className="sender-header">
-                            {senderText.map((message, index) => (
-                            <li className="sender-message" key={index}>
-                                {message.type === "text" ? message.content 
-                                    : message.type === "gif" ? <img src={message.content} alt="GIF" style={{width: "200px"}}/>
-                                    : <span style={{ fontSize: "1.5rem" }}>{message.content}</span>}
-                                    <p style={{fontSize: "0.75rem", fontFamily: "Open Sans, sans-serif"}}>{message.time}</p>
-                            </li>
-                            ))}
-                        </ul>
-                    </div>
-                </div>
-
-
-                {/* Texting area */}
-                <div className="text-area">
-                    <button className="text-area-icons"><MdPermMedia /></button>
-                    <button className="text-area-icons"  disabled={!currentFriend} onClick={showEmojiBox}><MdEmojiEmotions /></button>
-                    
-                    <input type="text" id="placeholderText" autoComplete="off" placeholder="Enter your message..." onKeyDown={(event) => {
-                        if (event.key === "Enter") {
-                            handleMessageSent()
-                        }
-                    }}/>
-                    <button onClick={handleMessageSent}  disabled={!currentFriend} className="text-area-icons"><BsSendFill /></button>
-                    <button className="text-area-icons gif"  disabled={!currentFriend} onClick={showGifBox}><MdOutlineGif /></button>
-                    
-                    <button className="text-area-icons camera"><FaCameraRetro /></button>
-                </div>
-            </div>
+            <ConnectionStatus status={connectionStatus} />
+            
+            <FriendsList 
+                friends={friends} 
+                currentFriend={currentFriend}
+                setCurrentFriend={setCurrentFriend}
+            />
+            
+            <ChatArea 
+                username={username}
+                currentFriend={currentFriend}
+                messages={senderText}
+                connectionStatus={connectionStatus}
+                onMessageSend={handleMessageSent}
+                onGifSelect={handleGifSelect}
+                chatDisplayRef={chatDisplayRef}
+            />
         </div>
     );
 }
