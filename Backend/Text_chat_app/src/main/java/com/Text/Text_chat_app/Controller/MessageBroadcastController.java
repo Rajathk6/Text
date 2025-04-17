@@ -1,6 +1,5 @@
 package com.Text.Text_chat_app.Controller;
 
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 import java.time.format.DateTimeFormatter;
 
@@ -15,11 +14,8 @@ import com.Text.Text_chat_app.Model.MessageRequest;
 import com.Text.Text_chat_app.Model.message;
 import com.Text.Text_chat_app.Repository.MessageRepo;
 
-import org.slf4j.Logger; // Import Logger
-import org.slf4j.LoggerFactory; // Import LoggerFactory
 @Controller
 public class MessageBroadcastController {
-    private static final Logger log = LoggerFactory.getLogger(MessageBroadcastController.class);
     private final MessageRepo messageRepo;
     private final SimpMessagingTemplate messagingTemplate;
 

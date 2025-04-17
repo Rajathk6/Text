@@ -1,9 +1,6 @@
 package com.Text.Text_chat_app.Model;
 
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;

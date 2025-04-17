@@ -1,10 +1,7 @@
 package com.Text.Text_chat_app.Model;
 
-import java.time.LocalDateTime;
 import java.time.ZonedDateTime;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
