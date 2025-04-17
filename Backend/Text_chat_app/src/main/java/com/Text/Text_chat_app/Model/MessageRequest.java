@@ -14,4 +14,5 @@ public class MessageRequest {
     private String receiver;
     private String content;
     private ZonedDateTime timestamp;
+    private String type;
 }

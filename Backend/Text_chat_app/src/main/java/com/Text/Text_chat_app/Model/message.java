@@ -27,6 +27,7 @@ public class message {
     private String content;
     @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE")
     private ZonedDateTime timestamp;  // Changed type
+    private String type;
 
     // Add this transient field for ISO format
     @Transient

@@ -6,13 +6,12 @@ import toast, { Toaster } from "react-hot-toast";
 import ApiMapping from "../Config/ApiMapping";
 import FriendsList from "./FriendsList";
 import ChatArea from "./ChatArea";
-import ConnectionStatus from "./ConnectionStatus";
 
 // Helper function to format timestamps safely
 const formatTimestamp = (timestamp) => {
-    if (!timestamp) return "No time"; // Handle null or undefined timestamps
+    if (!timestamp) return "No time"; 
     const date = new Date(timestamp);
-    if (isNaN(date.getTime())) { // Check if the date is valid
+    if (isNaN(date.getTime())) { 
         console.warn("Invalid timestamp received:", timestamp);
         return "Invalid time";
     }
@@ -25,7 +24,7 @@ const formatTimestamp = (timestamp) => {
             hour: "2-digit",
             minute: "2-digit",
             second: "2-digit",
-            hour12: false // Use 24-hour format
+            hour12: true
         });
     } catch (error) {
         console.error("Error formatting timestamp:", timestamp, error);
@@ -47,7 +46,7 @@ function Dashboard() {
     const chatDisplayRef = useRef(null);
 
     const getConversationKey = (user1, user2) => {
-        if (!user1 || !user2) return null; // Handle potential undefined users
+        if (!user1 || !user2) return null; 
         return [user1.trim().toLowerCase(), user2.trim().toLowerCase()].sort().join("_");
     }
 
@@ -145,10 +144,6 @@ function Dashboard() {
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
                 login: username,
             },
-            debug: function(str) {
-                // Avoid logging sensitive info like tokens in production
-                // console.log("STOMP: " + str);
-            },
             reconnectDelay: 5000,
             heartbeatIncoming: 4000,
             heartbeatOutgoing: 4000
@@ -157,9 +152,9 @@ function Dashboard() {
         client.onConnect = function() {
             setConnectionStatus("connected");
             toast.success("Connected to chat server!");
-            const userQueue = `/user/${username}/messages`; // Correct destination
+            const userQueue = `/user/${username}/messages`; 
             console.log(`Subscribing to: ${userQueue}`);
-            client.subscribe(userQueue, handleIncomingMessage); // Use correct queue name
+            client.subscribe(userQueue, handleIncomingMessage);
             client.subscribe('/topic/public', handleBroadcastMessage);
         };
 
@@ -292,7 +287,7 @@ function Dashboard() {
         console.log("Sending message object:", messageObject);
 
         // Optimistically update UI
-        const formattedMessage = {
+        const formattedTextMessage = {
             type: "text",
             content: messageContent,
             sender: username,
@@ -301,7 +296,7 @@ function Dashboard() {
             // Format time for display using the helper
             time: formatTimestamp(clientTimestamp) // Format the Date object directly
         };
-        console.log("Optimistic update formatted time: " + formattedMessage.time);
+        console.log("Optimistic update formatted time: " + formattedTextMessage.time);
 
         // Update central messages state
         setMessages(prev => {
@@ -310,7 +305,7 @@ function Dashboard() {
             const conversationMessages = prev[conversationKey] || [];
             return {
                 ...prev,
-                [conversationKey]: [...conversationMessages, formattedMessage]
+                [conversationKey]: [...conversationMessages, formattedTextMessage]
             };
         });
 
@@ -347,6 +342,14 @@ function Dashboard() {
         };
         console.log("Optimistic GIF update formatted time: " + gifMessage.time);
 
+        const gifObject = {
+            sender: username,
+            receiver: currentFriend,
+            content: gif.url,
+            timestamp: isoTimestamp, 
+            type: "gif"
+        }
+
         // Optimistically update UI
         setMessages(prev => {
             const conversationKey = getConversationKey(username, currentFriend);
@@ -361,13 +364,7 @@ function Dashboard() {
         // Send via WebSocket
         stompClientRef.current.publish({
             destination: "/app/chat.private",
-            body: JSON.stringify({ // Send full object to backend
-                sender: username,
-                receiver: currentFriend,
-                content: gif.url,
-                type: "gif",
-                timestamp: isoTimestamp // Send ISO string
-            })
+            body: JSON.stringify(gifObject)
         });
     };
 

@@ -35,6 +35,7 @@ public class MessageBroadcastController {
         newMessage.setSender(messageRequest.getSender());
         newMessage.setReceiver(messageRequest.getReceiver());
         newMessage.setContent(messageRequest.getContent());
+        newMessage.setType(messageRequest.getType());
         
         // Set timestamp with timezone
         newMessage.setTimestamp(ZonedDateTime.now());
@@ -59,7 +60,8 @@ public class MessageBroadcastController {
         newMessage.setReceiver("GROUP"); 
         newMessage.setContent(messageRequest.getContent());
         newMessage.setTimestamp(ZonedDateTime.now());
-
+        newMessage.setType(messageRequest.getType());
+        
         messageRepo.save(newMessage); 
 
         // Send message to all connected users

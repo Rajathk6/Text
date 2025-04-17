@@ -92,12 +92,14 @@ function ChatArea({
                 {/* GIF picker */}
                 <div 
                     ref={gifRef}
-                    style={{ 
-                        display: isGif ? "block" : "none",
-                        position: "fixed", 
+                    style={{
+                        display: isGif ? "grid" : "none",
+                        gridTemplateColumns: "repeat(2, 0.3fr)", // 👈 creates 3 equal columns
+                        gap: "10px", // 👈 space between grid items
+                        position: "fixed",
                         left: "350px",
                         top: "10px",
-                        width: "50%",
+                        width: "31%",
                         height: "30em",
                         overflowY: "auto",
                         zIndex: 10,
@@ -111,6 +113,7 @@ function ChatArea({
                         onGifClick={onGifSelect} 
                         theme="light"
                         height="100%"
+                        
                     />
                 </div>
 
@@ -190,9 +193,7 @@ function ChatArea({
                     <MdOutlineGif />
                 </button>
 
-                <button className="text-area-icons camera">
-                    <FaCameraRetro />
-                </button>
+                
             </div>
         </div>
     );
