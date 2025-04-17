@@ -2,14 +2,14 @@ import { RxAvatar } from "react-icons/rx";
 import { FiSearch } from "react-icons/fi";
 import { BsThreeDots } from "react-icons/bs";
 
-function ChatHeader({ currentFriend, connectionStatus }) {
+function ChatHeader({ currentFriend, connectionStatus, username}) {
     return (
         <div className="user-info">
             <button className="avatar">
                 <RxAvatar />
             </button>
             <div className="user-status">
-                <h3>{currentFriend || "Select a conversation"}</h3>
+                <h3>{currentFriend || `${username}(You)`}</h3>
                 <p>{connectionStatus === 'connected' ? 'Online' : 'Offline'}</p>
             </div>
             <button className="search-text">

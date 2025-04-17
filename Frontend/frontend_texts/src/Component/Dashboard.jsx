@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback, useMemo } from "react";
 import { useLocation } from "react-router-dom";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
@@ -6,20 +6,50 @@ import toast, { Toaster } from "react-hot-toast";
 import ApiMapping from "../Config/ApiMapping";
 import FriendsList from "./FriendsList";
 import ChatArea from "./ChatArea";
-import ConnectionStatus from "./ConnectionStatus"
+import ConnectionStatus from "./ConnectionStatus";
+
+// Helper function to format timestamps safely
+const formatTimestamp = (timestamp) => {
+    if (!timestamp) return "No time"; // Handle null or undefined timestamps
+    const date = new Date(timestamp);
+    if (isNaN(date.getTime())) { // Check if the date is valid
+        console.warn("Invalid timestamp received:", timestamp);
+        return "Invalid time";
+    }
+    try {
+        // Format: DD/MM/YYYY, HH:MM:SS (24-hour)
+        return date.toLocaleString("en-GB", {
+            day: "2-digit",
+            month: "2-digit",
+            year: "numeric",
+            hour: "2-digit",
+            minute: "2-digit",
+            second: "2-digit",
+            hour12: false // Use 24-hour format
+        });
+    } catch (error) {
+        console.error("Error formatting timestamp:", timestamp, error);
+        return "Time error";
+    }
+};
+
 
 function Dashboard() {
     const location = useLocation();
     const { username } = location.state || {};
 
-    const [friends, setFriends] = useState([]); // list of friends retrived from backend
-    const [currentFriend, setCurrentFriend] = useState(null); // the friend i am texting
-    const [messages, setMessages] = useState({}); // Messages organized by conversation
-    const [senderText, setSenderText] = useState([]);
+    const [friends, setFriends] = useState([]);
+    const [currentFriend, setCurrentFriend] = useState(null);
+    const [messages, setMessages] = useState({}); // Central state for all messages
     const [connectionStatus, setConnectionStatus] = useState("disconnected");
-    
-    const stompClientRef = useRef(null); // Use a ref to keep track of the STOMP client
-    const chatDisplayRef = useRef(null); // dynamically rendering the chat
+
+    const stompClientRef = useRef(null);
+    const chatDisplayRef = useRef(null);
+
+    const getConversationKey = (user1, user2) => {
+        if (!user1 || !user2) return null; // Handle potential undefined users
+        return [user1.trim().toLowerCase(), user2.trim().toLowerCase()].sort().join("_");
+    }
 
     // Fetch friends list
     const friendListRetrieval = async () => {
@@ -34,9 +64,15 @@ function Dashboard() {
                     }
                 }
             );
-            setFriends(friendresponse.data);
+            if (Array.isArray(friendresponse.data)) {
+                setFriends(friendresponse.data);
+            } else {
+                console.error("API did not return an array for friends list:", friendresponse.data);
+                setFriends([]);
+            }
         } catch (error) {
-            console.error("Error:", error?.response?.data || error.message);
+            setFriends([])
+            console.error("Error fetching friends list:", error?.response?.data || error.message);
             toast.error("Failed to load friends list");
         }
     };
@@ -45,132 +81,163 @@ function Dashboard() {
     useEffect(() => {
         if (currentFriend && username) {
             fetchConversationHistory(username, currentFriend);
+            console.log("sender: "+username)
+            console.log("receiver: " + currentFriend)
         }
     }, [currentFriend, username]);
 
     // Fetch conversation history between two users
     const fetchConversationHistory = async (user1, user2) => {
+        const conversationKey = getConversationKey(user1, user2);
+        if (!conversationKey) return; // Don't fetch if key is invalid
+
         try {
             const response = await ApiMapping.get(
-                `/api/messages/conversation?user1=${user1}&user2=${user2}`,
+                `/api/messages/conversation?user1=${encodeURIComponent(user1)}&user2=${encodeURIComponent(user2)}`,
                 {
                     headers: {
                         "Authorization": `Bearer ${localStorage.getItem("token")}`
                     }
                 }
             );
-            
+
             // Format and set messages
             const formattedMessages = response.data.map(msg => ({
-                type: "text",
+                type: msg.type || "text", // Default to text if type is missing
                 content: msg.content,
                 sender: msg.sender,
                 receiver: msg.receiver,
-                time: new Date(msg.timestamp).toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})
+                timestamp: msg.timestamp, // Store raw timestamp
+                // Format time for display using the helper
+                time: formatTimestamp(msg.timestamp)
             }));
-            
-            // Update messages for this conversation
+
+            // Update messages state for this specific conversation
             setMessages(prev => ({
                 ...prev,
-                [`${user1}_${user2}`]: formattedMessages
+                [conversationKey]: formattedMessages
             }));
-            
-            // Update the current display
-            setSenderText(formattedMessages);
+            console.log("conversation history fetched for key:", conversationKey);
+
         } catch (error) {
             console.error("Error fetching conversation:", error);
             toast.error("Failed to load conversation history");
+            // Clear messages for this conversation on error
+             setMessages(prev => ({
+                ...prev,
+                [conversationKey]: []
+            }));
         }
     };
 
     // Setup WebSocket connection
     useEffect(() => {
         friendListRetrieval();
-        
+
         if (!username) {
             toast.error("Username not found. Please login again.");
             return;
         }
 
-        // Create and configure STOMP client
         const client = new Client({
             webSocketFactory: () => new SockJS("http://localhost:8080/ws-endpoint"),
             connectHeaders: {
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
                 login: username,
             },
             debug: function(str) {
-                console.log("STOMP: " + str);
+                // Avoid logging sensitive info like tokens in production
+                // console.log("STOMP: " + str);
             },
             reconnectDelay: 5000,
             heartbeatIncoming: 4000,
             heartbeatOutgoing: 4000
         });
 
-        // Connection successful handler
         client.onConnect = function() {
             setConnectionStatus("connected");
             toast.success("Connected to chat server!");
-            
-            // Subscribe to personal topic to receive messages
-            client.subscribe(`/user/${username}/queue/messages`, handleIncomingMessage);
-            
-            // Subscribe to broadcast messages
+            const userQueue = `/user/${username}/messages`; // Correct destination
+            console.log(`Subscribing to: ${userQueue}`);
+            client.subscribe(userQueue, handleIncomingMessage); // Use correct queue name
             client.subscribe('/topic/public', handleBroadcastMessage);
         };
 
-        // Connection error handler
         client.onStompError = function(frame) {
             setConnectionStatus("error");
-            console.error('STOMP error:', frame);
-            toast.error("Connection error: " + frame.headers.message);
+            console.error('STOMP error:', frame.headers?.message || 'Unknown STOMP error', frame);
+            toast.error("Connection error: " + (frame.headers?.message || "Unknown STOMP error"));
         };
 
-        // Store client in ref and activate
+        client.onWebSocketClose = (event) => {
+             setConnectionStatus("disconnected");
+             console.log("WebSocket closed", event);
+             toast.error("Disconnected from chat server");
+        };
+
+        client.onWebSocketError = (error) => {
+            setConnectionStatus("error");
+            console.error("WebSocket error:", error);
+            toast.error("WebSocket connection error");
+        };
+
         stompClientRef.current = client;
         client.activate();
 
-        // Cleanup on component unmount
         return () => {
-            if (client && client.active) {
-                client.deactivate();
+            if (stompClientRef.current?.active) {
+                stompClientRef.current.deactivate();
+                console.log("STOMP client deactivated");
             }
         };
-        
-    }, [username]);
+
+    }, [username]); // Only re-run when username changes
 
     // Handle incoming personal messages
-    const handleIncomingMessage = (message) => {
+    const handleIncomingMessage = useCallback((message) => {
+        console.log("Incoming STOMP Message:", message);
         try {
             const messageData = JSON.parse(message.body);
-            console.log("Received message:", messageData);
-            
-            // Format the message
+            console.log("Received message object:", messageData);
+
+            // Basic validation
+            if (!messageData.sender || !messageData.receiver || !messageData.content || !messageData.timestamp) {
+                 console.error("Received incomplete message:", messageData);
+                 return;
+            }
+
             const formattedMessage = {
-                type: "text",
+                type: messageData.type || "text",
                 content: messageData.content,
                 sender: messageData.sender,
                 receiver: messageData.receiver,
-                time: new Date().toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})
+                timestamp: messageData.timestamp, // Store raw timestamp
+                // Format time for display using the helper
+                time: formatTimestamp(messageData.timestamp)
             };
-            
-            // Update messages with the new message
+            console.log("Received formatted message time: " + formattedMessage.time);
+
+            // Update the central messages state
             setMessages(prev => {
-                // Create conversation key (works regardless of who's sender or receiver)
-                const conversationKey = [messageData.sender, messageData.receiver].sort().join("_");
-                
-                const conversationMessages = prev[conversationKey] || [];
+                const conversationKey = getConversationKey(messageData.sender, messageData.receiver);
+                if (!conversationKey) {
+                    console.error("Could not determine conversation key for incoming message.");
+                    return prev; // Don't update if key is invalid
+                }
+                const currentConversation = prev[conversationKey] || [];
+
+                // Optional: Add a check to prevent adding exact duplicates based on timestamp/sender/content
+                if (currentConversation.some(msg => msg.timestamp === formattedMessage.timestamp && msg.sender === formattedMessage.sender && msg.content === formattedMessage.content)) {
+                    console.log("Duplicate message detected based on timestamp, sender, and content. Skipping.");
+                    return prev;
+                }
+
                 return {
                     ...prev,
-                    [conversationKey]: [...conversationMessages, formattedMessage]
+                    [conversationKey]: [...currentConversation, formattedMessage]
                 };
             });
-            
-            // If message is from current conversation partner, add to display
-            if (messageData.sender === currentFriend || 
-               (messageData.receiver === currentFriend && messageData.sender === username)) {
-                setSenderText(prev => [...prev, formattedMessage]);
-            }
-            
+
             // Notification for messages from others when not in that conversation
             if (messageData.sender !== username && messageData.sender !== currentFriend) {
                 toast(`New message from ${messageData.sender}`, {
@@ -178,20 +245,26 @@ function Dashboard() {
                 });
             }
         } catch (error) {
-            console.error("Error handling message:", error);
+            console.error("Error handling incoming message:", error);
+            console.error("Failed message body:", message?.body); // Log raw body on error
         }
-    };
+    }, [username, currentFriend]); // Dependencies for notification logic
+
 
     // Handle broadcast messages
     const handleBroadcastMessage = (message) => {
-        const messageData = JSON.parse(message.body);
-        console.log("Broadcast message:", messageData);
-        
-        // Handle broadcasts (user online status, etc.)
-        if (messageData.type === 'STATUS') {
-            toast(`${messageData.user} is ${messageData.status}`, {
-                icon: messageData.status === 'ONLINE' ? '🟢' : '⚪'
-            });
+        try {
+            const messageData = JSON.parse(message.body);
+            console.log("Broadcast message:", messageData);
+
+            // Handle broadcasts (user online status, etc.)
+            if (messageData.type === 'STATUS') {
+                toast(`${messageData.user} is ${messageData.status}`, {
+                    icon: messageData.status === 'ONLINE' ? '🟢' : '⚪'
+                });
+            }
+        } catch (error) {
+            console.error("Error handling broadcast message:", error);
         }
     };
 
@@ -200,39 +273,47 @@ function Dashboard() {
         if (!messageContent || !currentFriend || !stompClientRef.current?.active) {
             if (!stompClientRef.current?.active) {
                 toast.error("Not connected to chat server");
+            } else if (!currentFriend) {
+                toast.error("Please select a friend to chat with.");
             }
             return;
         }
-        
-        // Create message object
+
+        const clientTimestamp = new Date(); // Get current date object
+        const isoTimestamp = clientTimestamp.toISOString(); // Use ISO format for backend
+
         const messageObject = {
             sender: username,
             receiver: currentFriend,
             content: messageContent,
-            timestamp: new Date().toISOString()
+            type: "text",
+            timestamp: isoTimestamp // Send ISO string
         };
-        
-        // Add message to local display immediately (optimistic UI)
+        console.log("Sending message object:", messageObject);
+
+        // Optimistically update UI
         const formattedMessage = {
             type: "text",
             content: messageContent,
             sender: username,
             receiver: currentFriend,
-            time: new Date().toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})
+            timestamp: isoTimestamp, // Store raw timestamp (client-generated for optimistic)
+            // Format time for display using the helper
+            time: formatTimestamp(clientTimestamp) // Format the Date object directly
         };
-        
-        setSenderText(prev => [...prev, formattedMessage]);
-        
-        // Update messages state
+        console.log("Optimistic update formatted time: " + formattedMessage.time);
+
+        // Update central messages state
         setMessages(prev => {
-            const conversationKey = [username, currentFriend].sort().join("_");
+            const conversationKey = getConversationKey(username, currentFriend);
+            if (!conversationKey) return prev;
             const conversationMessages = prev[conversationKey] || [];
             return {
                 ...prev,
                 [conversationKey]: [...conversationMessages, formattedMessage]
             };
         });
-        
+
         // Send via WebSocket
         stompClientRef.current.publish({
             destination: "/app/chat.private",
@@ -240,57 +321,90 @@ function Dashboard() {
         });
     };
 
-    // Scroll to bottom of chat when messages change
-    useEffect(() => {
-        if (chatDisplayRef.current) {
-            chatDisplayRef.current.scrollTop = chatDisplayRef.current.scrollHeight;
-        }
-    }, [senderText]);
-
-    // Handle GIF selection
+     // Handle GIF selection
     const handleGifSelect = (gif) => {
-        const timestamp = new Date().toLocaleTimeString([], {hour: "2-digit", minute: "2-digit"})
+        if (!currentFriend || !stompClientRef.current?.active) {
+             toast.error("Select a friend and ensure you are connected.");
+             return;
+        }
+        if (!gif || !gif.url) {
+            console.error("Invalid GIF object selected:", gif);
+            toast.error("Invalid GIF selected.");
+            return;
+        }
+
+        const clientTimestamp = new Date();
+        const isoTimestamp = clientTimestamp.toISOString();
+
         const gifMessage = {
             type: "gif",
             content: gif.url,
             sender: username,
             receiver: currentFriend,
-            time: timestamp
+            timestamp: isoTimestamp, // Store raw timestamp (client-generated)
+            // Format time for display using the helper
+            time: formatTimestamp(clientTimestamp)
         };
-        
-        // Add to local display
-        setSenderText(prev => [...prev, gifMessage]);
-        
-        // Send via WebSocket if connected
-        if (stompClientRef.current?.active) {
-            stompClientRef.current.publish({
-                destination: "/app/chat.private",
-                body: JSON.stringify({
-                    sender: username,
-                    receiver: currentFriend,
-                    content: gif.url,
-                    type: "gif",
-                    timestamp: new Date().toISOString()
-                })
-            });
-        }
+        console.log("Optimistic GIF update formatted time: " + gifMessage.time);
+
+        // Optimistically update UI
+        setMessages(prev => {
+            const conversationKey = getConversationKey(username, currentFriend);
+             if (!conversationKey) return prev;
+            const conversationMessages = prev[conversationKey] || [];
+            return {
+                ...prev,
+                [conversationKey]: [...conversationMessages, gifMessage]
+            };
+        });
+
+        // Send via WebSocket
+        stompClientRef.current.publish({
+            destination: "/app/chat.private",
+            body: JSON.stringify({ // Send full object to backend
+                sender: username,
+                receiver: currentFriend,
+                content: gif.url,
+                type: "gif",
+                timestamp: isoTimestamp // Send ISO string
+            })
+        });
     };
 
+
+    // Derive displayed messages from the central state
+    const currentConversationKey = useMemo(() => {
+        return getConversationKey(username, currentFriend);
+    }, [username, currentFriend]);
+
+    const displayedMessages = currentConversationKey ? (messages[currentConversationKey] || []) : [];
+
+    // Scroll to bottom of chat when displayed messages change
+    useEffect(() => {
+        if (chatDisplayRef.current) {
+            // Use setTimeout to allow the DOM to update before scrolling
+            setTimeout(() => {
+                 chatDisplayRef.current.scrollTop = chatDisplayRef.current.scrollHeight;
+            }, 50); // Small delay might be needed
+        }
+    }, [displayedMessages]); // Depend on the derived displayedMessages
+
     return (
-        <div className="parent-dashboard">  
-            <Toaster />
-            <ConnectionStatus status={connectionStatus} />
-            
-            <FriendsList 
-                friends={friends} 
+        <div className="parent-dashboard">
+            <Toaster position="top-right" />
+            {/* <ConnectionStatus status={connectionStatus} /> */}
+
+            <FriendsList
+                friends={friends}
                 currentFriend={currentFriend}
                 setCurrentFriend={setCurrentFriend}
+                username={username}
             />
-            
-            <ChatArea 
+
+            <ChatArea
                 username={username}
                 currentFriend={currentFriend}
-                messages={senderText}
+                messages={displayedMessages} // Pass the derived messages
                 connectionStatus={connectionStatus}
                 onMessageSend={handleMessageSent}
                 onGifSelect={handleGifSelect}

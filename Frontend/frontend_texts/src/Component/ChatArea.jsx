@@ -1,11 +1,9 @@
-import { useState } from "react";
-import { BsSendFill, BsThreeDots } from "react-icons/bs";
+import { useState, useEffect, useRef } from "react";
+import { BsSendFill } from "react-icons/bs";
 import { MdPermMedia, MdOutlineGif, MdEmojiEmotions } from "react-icons/md";
 import { FaCameraRetro } from "react-icons/fa";
-import { RxAvatar } from "react-icons/rx";
-import { FiSearch } from "react-icons/fi";
 import GifPicker from "gif-picker-react";
-import EmojiPicker from 'emoji-picker-react';
+import EmojiPicker from "emoji-picker-react";
 import ChatHeader from "./ChatHeader";
 import MessageList from "./MessageList";
 
@@ -22,34 +20,61 @@ function ChatArea({
     const [isEmoji, setIsEmoji] = useState(false);
     const apiKey = import.meta.env.VITE_TENOR_API_KEY;
 
+    const inputRef = useRef(null);
+    const emojiRef = useRef(null);
+    const gifRef = useRef(null);
+
+    // Close pickers if clicked outside
+    useEffect(() => {
+        function handleClickOutside(event) {
+            if (
+                emojiRef.current && !emojiRef.current.contains(event.target) &&
+                gifRef.current && !gifRef.current.contains(event.target)
+            ) {
+                setIsGif(false);
+                setIsEmoji(false);
+            }
+        }
+
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => {
+            document.removeEventListener("mousedown", handleClickOutside);
+        };
+    }, []);
+
     // Handle emoji selection
     function handleEmojiSelect(emoji) {
-        const inputField = document.getElementById("placeholderText");
-        inputField.value += emoji.emoji;
-        inputField.focus();
+        if (inputRef.current) {
+            inputRef.current.value += emoji.emoji;
+        }
     }
 
     // Show/hide GIF picker
-    function showGifBox() {
-        setIsGif(prevState => !prevState);
-        document.getElementById("getGif").style.display = isGif ? "none" : "block";
+    function showGifBox(e) {
+        e.stopPropagation();
+        setIsGif(prev => {
+            if (!prev) setIsEmoji(false);
+            return !prev;
+        });
     }
 
-    // Show/hide emoji picker
-    function showEmojiBox() {
-        setIsEmoji(prevState => !prevState);
-        document.getElementById("getEmoji").style.display = isEmoji ? "none" : "block";
+    // Show/hide Emoji picker
+    function showEmojiBox(e) {
+        e.stopPropagation();
+        setIsEmoji(prev => {
+            if (!prev) setIsGif(false);
+            return !prev;
+        });
     }
 
-    // Handle message sending
+    // Send message
     function handleMessageSent() {
-        document.getElementById("getGif").style.display = "none";
-        document.getElementById("getEmoji").style.display = "none";
-        
-        const messageInput = document.getElementById("placeholderText");
-        const messageContent = messageInput.value.trim();
-        messageInput.value = "";
-        
+        const messageContent = inputRef.current.value.trim();
+        inputRef.current.value = "";
+
+        setIsGif(false);
+        setIsEmoji(false);
+
         if (messageContent) {
             onMessageSend(messageContent);
         }
@@ -58,38 +83,51 @@ function ChatArea({
     return (
         <div className="user-chat">
             <ChatHeader 
+                username={username}
                 currentFriend={currentFriend}
                 connectionStatus={connectionStatus}
             />
 
             <div className="chat-display" ref={chatDisplayRef}>
                 {/* GIF picker */}
-                <div className="gif-display" id="getGif" style={{ 
-                    display: "none",
-                    position: "fixed", 
-                    left: "250px",
-                    top: "10px",
-                    bottom: "80px",
-                    zIndex: 10
-                }}>
+                <div 
+                    ref={gifRef}
+                    style={{ 
+                        display: isGif ? "block" : "none",
+                        position: "fixed", 
+                        left: "350px",
+                        top: "10px",
+                        width: "50%",
+                        height: "30em",
+                        overflowY: "auto",
+                        zIndex: 10,
+                        borderRadius: "10px",
+                        padding: "10px"
+                    }}
+                >
                     <GifPicker 
                         tenorApiKey={apiKey} 
                         contentFilter="off" 
                         onGifClick={onGifSelect} 
-                        height="100%" 
-                        width="50em"
+                        theme="light"
+                        height="100%"
                     />
                 </div>
 
                 {/* Emoji picker */}
-                <div id="getEmoji" style={{
-                    display: "none",
-                    position: "fixed", 
-                    left: "350px",
-                    top: "10px",
-                    bottom: "80px",
-                    zIndex: 10
-                }}>
+                <div 
+                    ref={emojiRef}
+                    style={{
+                        display: isEmoji ? "block" : "none",
+                        position: "fixed", 
+                        left: "350px",
+                        top: "10px",
+                        bottom: "80px",
+                        zIndex: 10,
+                        borderRadius: "10px",
+                        padding: "10px"
+                    }}
+                >
                     <EmojiPicker 
                         onEmojiClick={handleEmojiSelect} 
                         height="100%" 
@@ -106,6 +144,7 @@ function ChatArea({
             {/* Message input area */}
             <div className="text-area">
                 <button className="text-area-icons"><MdPermMedia /></button>
+
                 <button 
                     className="text-area-icons" 
                     disabled={!currentFriend || connectionStatus !== 'connected'} 
@@ -113,22 +152,28 @@ function ChatArea({
                 >
                     <MdEmojiEmotions />
                 </button>
-                
+
                 <input 
                     type="text" 
-                    id="placeholderText" 
+                    ref={inputRef}
                     autoComplete="off" 
-                    placeholder={!currentFriend ? "Select a friend to start chatting" : 
-                                connectionStatus !== 'connected' ? "Connecting..." : 
-                                "Type your message here..."}
+                    placeholder={
+                        !currentFriend ? "Select a friend to start chatting" :
+                        connectionStatus !== 'connected' ? "Connecting..." : 
+                        "Type your message here..."
+                    }
                     disabled={!currentFriend || connectionStatus !== 'connected'}
+                    onClick={() => {
+                        setIsGif(false);
+                        setIsEmoji(false);
+                    }}
                     onKeyDown={(event) => {
                         if (event.key === "Enter") {
                             handleMessageSent();
                         }
                     }}
                 />
-                
+
                 <button 
                     onClick={handleMessageSent} 
                     disabled={!currentFriend || connectionStatus !== 'connected'} 
@@ -136,7 +181,7 @@ function ChatArea({
                 >
                     <BsSendFill />
                 </button>
-                
+
                 <button 
                     className="text-area-icons gif" 
                     disabled={!currentFriend || connectionStatus !== 'connected'} 
@@ -144,7 +189,7 @@ function ChatArea({
                 >
                     <MdOutlineGif />
                 </button>
-                
+
                 <button className="text-area-icons camera">
                     <FaCameraRetro />
                 </button>

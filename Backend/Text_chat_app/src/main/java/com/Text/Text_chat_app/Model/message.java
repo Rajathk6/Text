@@ -1,14 +1,17 @@
 package com.Text.Text_chat_app.Model;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
 
 import com.fasterxml.jackson.annotation.JsonFormat;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.Table;
+import jakarta.persistence.Transient;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -25,6 +28,27 @@ public class message {
     private String sender;
     private String receiver;
     private String content;
-    @JsonFormat(shape = JsonFormat.Shape.STRING, pattern = "dd-MM-yyyy HH:mm:ss", timezone = "Asia/Kolkata")
-    private LocalDateTime timestamp;
+    @Column(columnDefinition = "TIMESTAMP WITH TIME ZONE")
+    private ZonedDateTime timestamp;  // Changed type
+
+    // Add this transient field for ISO format
+    @Transient
+    private String isoTimestamp;
+
+    // Getters and setters
+    public ZonedDateTime getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(ZonedDateTime timestamp) {
+        this.timestamp = timestamp;
+    }
+
+    public String getIsoTimestamp() {
+        return isoTimestamp;
+    }
+
+    public void setIsoTimestamp(String isoTimestamp) {
+        this.isoTimestamp = isoTimestamp;
+    }
 }

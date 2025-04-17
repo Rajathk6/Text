@@ -1,4 +1,5 @@
 function MessageList({ messages, username }) {
+    console.log(messages)
     return (
         <div className="messages-container">
             {messages.map((message, index) => (
@@ -7,6 +8,7 @@ function MessageList({ messages, username }) {
                     className={`message ${message.sender === username ? 'sent' : 'received'}`}
                     style={{
                         alignSelf: message.sender === username ? 'flex-end' : 'flex-start',
+                        minWidth: "10%",
                         maxWidth: '70%',
                         padding: '8px 12px',
                         margin: '5px',

@@ -246,6 +246,10 @@ body {
   scrollbar-color: transparent transparent;
 }
 
+.messages-container {
+  display: flex;
+  flex-direction: column;
+}
 
 .sender-header{
   display: flex;

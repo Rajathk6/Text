@@ -1,19 +1,25 @@
 package com.Text.Text_chat_app.Controller;
 
 import java.time.LocalDateTime;
+import java.time.ZonedDateTime;
+import java.time.format.DateTimeFormatter;
 
+import org.springframework.context.event.EventListener;
 import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.Payload;
 import org.springframework.messaging.simp.SimpMessagingTemplate;
 import org.springframework.stereotype.Controller;
+import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 
 import com.Text.Text_chat_app.Model.MessageRequest;
 import com.Text.Text_chat_app.Model.message;
 import com.Text.Text_chat_app.Repository.MessageRepo;
 
+import org.slf4j.Logger; // Import Logger
+import org.slf4j.LoggerFactory; // Import LoggerFactory
 @Controller
 public class MessageBroadcastController {
-
+    private static final Logger log = LoggerFactory.getLogger(MessageBroadcastController.class);
     private final MessageRepo messageRepo;
     private final SimpMessagingTemplate messagingTemplate;
 
@@ -22,28 +28,29 @@ public class MessageBroadcastController {
         this.messagingTemplate = messagingTemplate;
     }
 
+    @EventListener
+    public void handleSessionSubscribe(SessionSubscribeEvent event) {
+        System.out.println("Subscription: " + event.getMessage().getHeaders().get("simpDestination"));
+    }
+
     @MessageMapping("/chat.private")
     public void privateMessage(@Payload MessageRequest messageRequest) {
-        // Gets a private message from a particular user and saves it in the database
         message newMessage = new message();
         newMessage.setSender(messageRequest.getSender());
         newMessage.setReceiver(messageRequest.getReceiver());
         newMessage.setContent(messageRequest.getContent());
-        newMessage.setTimestamp(LocalDateTime.now());
+        
+        // Set timestamp with timezone
+        newMessage.setTimestamp(ZonedDateTime.now());
         
         messageRepo.save(newMessage);
-
-        // you got the private message from a user, now its time to forward that message to intended user
+    
+        // Add ISO format timestamp for frontend
+        newMessage.setIsoTimestamp(newMessage.getTimestamp().format(DateTimeFormatter.ISO_INSTANT));
+        
         messagingTemplate.convertAndSendToUser(
             messageRequest.getReceiver(), 
-            "/queue/messages", 
-            newMessage
-        );
-        
-        // Send back to sender (for multi-device sync) so that the same user can see his text if he logs in from another device
-        messagingTemplate.convertAndSendToUser(
-            messageRequest.getSender(),
-            "/queue/messages",
+            "/messages", 
             newMessage
         );
     }
@@ -51,16 +58,15 @@ public class MessageBroadcastController {
     @MessageMapping("/chat.public")
     public void publicMessage(@Payload MessageRequest messageRequest) {
     
-    message newMessage = new message();
-    newMessage.setSender(messageRequest.getSender());
-    newMessage.setReceiver("GROUP"); 
-    newMessage.setContent(messageRequest.getContent());
-    newMessage.setTimestamp(LocalDateTime.now());
+        message newMessage = new message();
+        newMessage.setSender(messageRequest.getSender());
+        newMessage.setReceiver("GROUP"); 
+        newMessage.setContent(messageRequest.getContent());
+        newMessage.setTimestamp(ZonedDateTime.now());
 
-    messageRepo.save(newMessage); 
+        messageRepo.save(newMessage); 
 
-    // Send message to all connected users
-    messagingTemplate.convertAndSend("/topic/public", newMessage); 
-}
-
+        // Send message to all connected users
+        messagingTemplate.convertAndSend("/topic/public", newMessage); 
+    }
 }
