@@ -1,7 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { BsSendFill } from "react-icons/bs";
-import { MdPermMedia, MdOutlineGif, MdEmojiEmotions } from "react-icons/md";
-import { FaCameraRetro } from "react-icons/fa";
+import { MdOutlineGif, MdEmojiEmotions } from "react-icons/md";
 import GifPicker from "gif-picker-react";
 import EmojiPicker from "emoji-picker-react";
 import ChatHeader from "./ChatHeader";
@@ -10,14 +9,16 @@ import MessageList from "./MessageList";
 function ChatArea({ 
     username, 
     currentFriend, 
-    messages, 
-    connectionStatus, 
+    messages,  
     onMessageSend, 
     onGifSelect,
-    chatDisplayRef
+    chatDisplayRef,
+    onBack,
+    smallScreen
 }) {
     const [isGif, setIsGif] = useState(false);
     const [isEmoji, setIsEmoji] = useState(false);
+
     const apiKey = import.meta.env.VITE_TENOR_API_KEY;
 
     const inputRef = useRef(null);
@@ -81,11 +82,13 @@ function ChatArea({
     }
 
     return (
-        <div className="user-chat">
+        <div className="user-chat" 
+            style={{display: window.innerWidth > 480 ? "flex" : !smallScreen ? "flex" : "flex"}}
+        >
             <ChatHeader 
                 username={username}
                 currentFriend={currentFriend}
-                connectionStatus={connectionStatus}
+                onBack={onBack}
             />
 
             <div className="chat-display" ref={chatDisplayRef}>
@@ -146,11 +149,11 @@ function ChatArea({
 
             {/* Message input area */}
             <div className="text-area">
-                <button className="text-area-icons"><MdPermMedia /></button>
+                {/* <button className="text-area-icons"><MdPermMedia /></button> */}
 
                 <button 
                     className="text-area-icons" 
-                    disabled={!currentFriend || connectionStatus !== 'connected'} 
+                    disabled={!currentFriend } 
                     onClick={showEmojiBox}
                 >
                     <MdEmojiEmotions />
@@ -161,11 +164,9 @@ function ChatArea({
                     ref={inputRef}
                     autoComplete="off" 
                     placeholder={
-                        !currentFriend ? "Select a friend to start chatting" :
-                        connectionStatus !== 'connected' ? "Connecting..." : 
-                        "Type your message here..."
+                        !currentFriend ? "Select a friend to start chatting" : "Enter a message"
                     }
-                    disabled={!currentFriend || connectionStatus !== 'connected'}
+                    disabled={!currentFriend}
                     onClick={() => {
                         setIsGif(false);
                         setIsEmoji(false);
@@ -179,7 +180,7 @@ function ChatArea({
 
                 <button 
                     onClick={handleMessageSent} 
-                    disabled={!currentFriend || connectionStatus !== 'connected'} 
+                    disabled={!currentFriend} 
                     className="text-area-icons"
                 >
                     <BsSendFill />
@@ -187,7 +188,7 @@ function ChatArea({
 
                 <button 
                     className="text-area-icons gif" 
-                    disabled={!currentFriend || connectionStatus !== 'connected'} 
+                    disabled={!currentFriend } 
                     onClick={showGifBox}
                 >
                     <MdOutlineGif />

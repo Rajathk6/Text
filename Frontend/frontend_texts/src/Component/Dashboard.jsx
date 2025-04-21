@@ -40,8 +40,8 @@ function Dashboard() {
     const [friends, setFriends] = useState([]);
     const [currentFriend, setCurrentFriend] = useState(null);
     const [messages, setMessages] = useState({}); // Central state for all messages
-    const [connectionStatus, setConnectionStatus] = useState("disconnected");
-
+    const [smallScreen, setSmallScreen] = useState(false);
+    console.log(smallScreen);
     const stompClientRef = useRef(null);
     const chatDisplayRef = useRef(null);
 
@@ -165,7 +165,6 @@ function Dashboard() {
         };
 
         client.onWebSocketClose = (event) => {
-             setConnectionStatus("disconnected");
              console.log("WebSocket closed", event);
              toast.error("Disconnected from chat server");
         };
@@ -244,7 +243,6 @@ function Dashboard() {
             console.error("Failed message body:", message?.body); // Log raw body on error
         }
     }, [username, currentFriend]); // Dependencies for notification logic
-
 
     // Handle broadcast messages
     const handleBroadcastMessage = (message) => {
@@ -396,13 +394,17 @@ function Dashboard() {
                 currentFriend={currentFriend}
                 setCurrentFriend={setCurrentFriend}
                 username={username}
+                setSmallScreen={setSmallScreen}
+                smallScreen={smallScreen}
+                messages={displayedMessages}
             />
 
             <ChatArea
                 username={username}
                 currentFriend={currentFriend}
-                messages={displayedMessages} // Pass the derived messages
-                connectionStatus={connectionStatus}
+                messages={displayedMessages} 
+                smallScreen={smallScreen}
+                // connectionStatus={connectionStatus}
                 onMessageSend={handleMessageSent}
                 onGifSelect={handleGifSelect}
                 chatDisplayRef={chatDisplayRef}

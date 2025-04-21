@@ -1,8 +1,9 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { TbBubbleText } from "react-icons/tb";
 import ApiMapping from "../Config/ApiMapping";
 import toast, { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
+import './LoginPage.css';
 
 function LoginPage() {
     const [username, setUsername] = useState("");
@@ -67,19 +68,16 @@ function LoginPage() {
     };
 
     return (
-        <div className="main-auth-container">
+        <div className="main-main-container">
+            <Toaster />
+            <div className="main-auth-container">
+                
             <div className="app-logo">
-                <Toaster />
-                <a href="/">
-                    <button className="main-text-logo">
-                        <TbBubbleText />
-                    </button>
-                </a>
-                <p>Text</p>
+                <img src="\src\assets\TextLogo.png" alt="Text Logo" />
             </div>
 
             <div className="auth-form-container">
-                <h2>{isLogin ? "Login" : "Register"} with Text</h2>
+                <h2>{isLogin ? "Welcome back" : "Register with Text"} </h2>
 
                 <form className="form-attributes">
                     <input
@@ -103,11 +101,13 @@ function LoginPage() {
                     </button>
                 </form>
 
-                <p onClick={isLogin ? handleRegister : handleLogin} style={{ cursor: "pointer", color: "blue" }}>
+                <p onClick={isLogin ? handleRegister : handleLogin} style={{ cursor: "pointer", color: "black" }}>
                     {isLogin ? "New user? Register here" : "Already have an account? Login here"}
                 </p>
             </div>
         </div>
+        </div>
+               
     );
 }
 

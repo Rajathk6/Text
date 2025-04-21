@@ -3,7 +3,12 @@ import { FiSearch } from "react-icons/fi";
 import { RxAvatar } from "react-icons/rx";
 import ApiMapping from "../Config/ApiMapping";
 
-function FriendsList({ friends, currentFriend, setCurrentFriend }) {
+const truncateText = (text, maxLength = 30) => {
+  if (!text) return "";
+  return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
+};
+
+function FriendsList({ friends, currentFriend, setCurrentFriend, setSmallScreen, smallScreen }) {
   const [searchTerm, setSearchTerm] = useState("");
   const [globalResults, setGlobalResults] = useState([]);
 
@@ -39,25 +44,22 @@ function FriendsList({ friends, currentFriend, setCurrentFriend }) {
   }, [searchTerm, filteredFriends.length]);
 
   return (
-    <div className="dashboard-nav">
-      <div className="search-friends">
-        <button><FiSearch /></button>
-        <input 
-          type="text" 
-          placeholder="Search for users..." 
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
-      </div>
+    <div className="dashboard-nav"
+    style={{display: window.innerWidth > 480 ? "flex" : smallScreen ? "none" : "flex"}}
+    >
+      <p className="navigation-header">Messages...</p>
       
       <div className="available-friends">
         <ul>
           {filteredFriends.length > 0 ? (
             // If local friends match, render those.
-            filteredFriends.map((friend, index) => (
+            filteredFriends.map((friend , index) => (
               <li 
                 key={index} 
-                onClick={() => setCurrentFriend(friend)}
+                onClick={() => {
+                  setCurrentFriend(friend)
+                  window.innerWidth < 480 ? setSmallScreen(true) : setSmallScreen(false)
+                }}
                 style={{
                   backgroundColor: currentFriend === friend ? "#c2e7ff" : "",
                   cursor: "pointer"
@@ -81,11 +83,20 @@ function FriendsList({ friends, currentFriend, setCurrentFriend }) {
               </li>
             ))
           ) : (
-            <p>No Users Found</p>
+            <p>No User Found</p>
           )}
         </ul>
       </div>
-    </div>
+        <div className="search-friends">
+          <button><FiSearch /></button>
+          <input 
+            type="text" 
+            placeholder="Search for users..." 
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+      </div>
   );
 }
 
