@@ -20,7 +20,7 @@ public class MessageController {
     public MessageController(MessageRepo messageRepo) {
         this.messageRepo = messageRepo;
     }
-
+    // retrive the conversation between 2 users who are currently chatting (one is the logged in user another is the friend the logged user wants to chat with)
     @GetMapping("/conversation")
     public ResponseEntity<List<message>> getConversation(
             @RequestParam("user1") String user1, 

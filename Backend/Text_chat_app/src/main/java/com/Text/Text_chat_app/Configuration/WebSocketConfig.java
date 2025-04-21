@@ -12,13 +12,14 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
     @Override
     public void configureMessageBroker(MessageBrokerRegistry registry) {
-        registry.enableSimpleBroker("/topic", "/user");
+        registry.enableSimpleBroker("/topic", "/user");  // brokers for setting up the communication
         registry.setApplicationDestinationPrefixes("/app"); // App path
-        registry.setUserDestinationPrefix("/user");
+        registry.setUserDestinationPrefix("/user");   // springboot default
     }
 
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
+        // ======= dont forget to change it to the actual url in deployment ========
         registry.addEndpoint("/ws-endpoint").setAllowedOriginPatterns("*").withSockJS()
         .setWebSocketEnabled(true);
     }

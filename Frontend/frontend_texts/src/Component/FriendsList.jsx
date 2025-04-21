@@ -73,7 +73,10 @@ function FriendsList({ friends, currentFriend, setCurrentFriend, setSmallScreen,
             globalResults.map((user) => (
               <li 
                 key={user.id}
-                onClick={() => setCurrentFriend(user.username)}
+                onClick={() => {
+                  setCurrentFriend(user.username)
+                  window.innerWidth < 480 ? setSmallScreen(true) : setSmallScreen(false)
+                }}
                 style={{
                   backgroundColor: currentFriend === user.username ? "#c2e7ff" : "",
                   cursor: "pointer"

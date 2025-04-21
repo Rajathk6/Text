@@ -29,29 +29,29 @@ public class MessageBroadcastController {
         System.out.println("Subscription: " + event.getMessage().getHeaders().get("simpDestination"));
     }
 
-    @MessageMapping("/chat.private")
+    @MessageMapping("/chat.private") // chat.private is to where the frontend publishes the message
     public void privateMessage(@Payload MessageRequest messageRequest) {
+        // Save the message received from the frontend
         message newMessage = new message();
         newMessage.setSender(messageRequest.getSender());
         newMessage.setReceiver(messageRequest.getReceiver());
         newMessage.setContent(messageRequest.getContent());
         newMessage.setType(messageRequest.getType());
-        
-        // Set timestamp with timezone
         newMessage.setTimestamp(ZonedDateTime.now());
-        
         messageRepo.save(newMessage);
     
         // Add ISO format timestamp for frontend
         newMessage.setIsoTimestamp(newMessage.getTimestamp().format(DateTimeFormatter.ISO_INSTANT));
         
+        // Send the message to the receiver at the endpoint they are listening to (endpoint specified in the frontend)
         messagingTemplate.convertAndSendToUser(
             messageRequest.getReceiver(), 
             "/messages", 
             newMessage
         );
     }
-    
+
+    // ======= Unimplemented ========
     @MessageMapping("/chat.public")
     public void publicMessage(@Payload MessageRequest messageRequest) {
     
