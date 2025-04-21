@@ -1,7 +1,7 @@
 # copying all the file and storing it in docker image to run it on servers
 FROM maven:3.9.4-eclipse-temurin-21-alpine AS build
 COPY . .
-RUN mvn clean package -DskipTests
+RUN mvn -f Backend/Text_chat_app/pom.xml clean package -DskipTests
 
 # openjdk is the server we will be running our .jar file 
 FROM openjdk:21-jdk-slim
