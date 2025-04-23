@@ -139,7 +139,7 @@ function Dashboard() {
         }
 
         const client = new Client({
-            webSocketFactory: () => new SockJS(ApiMapping),
+            webSocketFactory: () => new SockJS(ApiMapping/ws-endpoint),
             connectHeaders: {
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
                 login: username,

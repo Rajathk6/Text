@@ -35,7 +35,7 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
                 .requestMatchers("/api/auth/**", "/topic/**","/app/**", "/user/**").permitAll()
-                .requestMatchers(new AntPathRequestMatcher("/ws-endpoint/**")).permitAll()
+                .requestMatchers("/ws-endpoint/**").permitAll() 
                 .anyRequest().authenticated()
             )
             .sessionManagement(session -> session
@@ -50,7 +50,7 @@ public class SecurityConfig {
     @Bean
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration config = new CorsConfiguration();
-        config.setAllowedOrigins(List.of("http://localhost:5173")); // Frontend URL (change it accordingly)/
+        config.setAllowedOriginPatterns(List.of(ProductionConfig.FRONTENT_URL));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE", "OPTIONS"));
         config.setAllowedHeaders(List.of("Authorization", "Content-Type"));
         config.setExposedHeaders(List.of("Authorization"));
