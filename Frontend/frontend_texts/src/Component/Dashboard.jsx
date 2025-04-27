@@ -7,8 +7,6 @@ import apiUrl from "../Config/ApiMapping";
 import FriendsList from "./FriendsList";
 import ChatArea from "./ChatArea";
 
-const wsUrl = `${apiUrl}/ws-endpoint`
-
 // Helper function to format timestamps safely
 const formatTimestamp = (timestamp) => {
     if (!timestamp) return "No time"; 
@@ -130,7 +128,7 @@ function Dashboard() {
             }));
         }
     };
-
+    console.log("above useEffect")
     // Setup WebSocket connection
     useEffect(() => {
         friendListRetrieval();
@@ -139,9 +137,9 @@ function Dashboard() {
             toast.error("Username not found. Please login again.");
             return;
         }
-
+        console.log("above web socket within useEffect")
         const client = new Client({
-            webSocketFactory: () => new SockJS(wsUrl),
+            webSocketFactory: () => new SockJS("https://api.texts.sbs/ws-endpoint"),
             connectHeaders: {
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
                 login: username,
@@ -150,9 +148,9 @@ function Dashboard() {
             heartbeatIncoming: 4000,
             heartbeatOutgoing: 4000
         });
-
+        console.log("inside web socket")
         client.onConnect = function() {
-            setConnectionStatus("connected");
+            console.log("connected");
             toast.success("Connected to chat server!");
             const userQueue = `/user/${username}/messages`; 
             console.log(`Subscribing to: ${userQueue}`);
