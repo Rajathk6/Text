@@ -1,5 +1,4 @@
-import { useEffect, useState } from "react";
-import { TbBubbleText } from "react-icons/tb";
+import { useState } from "react";
 import ApiMapping from "../Config/ApiMapping";
 import toast, { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
@@ -73,7 +72,7 @@ function LoginPage() {
             <div className="main-auth-container">
                 
             <div className="app-logo">
-                <img src="\src\assets\TextLogo.png" alt="Text Logo" />
+                <img src="/textLogo.png" alt="Text Logo" />
             </div>
 
             <div className="auth-form-container">

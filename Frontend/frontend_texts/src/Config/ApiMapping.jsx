@@ -1,9 +1,11 @@
-import axios from "axios"
+// src/Config/ApiMapping.js
+import axios from 'axios';
 
-const ApiMapping = axios.create (
-    {
-        baseURL: "http://localhost:8080",
-    }
-)
+const apiUrl = axios.create({
+  baseURL: import.meta.env.VITE_BASE_URL || "http://localhost:8080",
+  headers: {
+    "Content-Type": "application/json"
+  }
+});
 
-export default ApiMapping
+export default apiUrl;

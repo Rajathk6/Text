@@ -1,7 +1,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { FiSearch } from "react-icons/fi";
 import { RxAvatar } from "react-icons/rx";
-import ApiMapping from "../Config/ApiMapping";
+import apiUrl from "../Config/ApiMapping";
 
 const truncateText = (text, maxLength = 30) => {
   if (!text) return "";
@@ -23,7 +23,7 @@ function FriendsList({ friends, currentFriend, setCurrentFriend, setSmallScreen,
     if (searchTerm.trim() !== "" && filteredFriends.length === 0) {
       const fetchGlobalResults = async () => {
         try {
-          const globalResponse = await ApiMapping.get(
+          const globalResponse = await apiUrl.get(
             `/api/dashboard/users/search?q=${encodeURIComponent(searchTerm)}`,
             {
               headers: {

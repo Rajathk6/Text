@@ -8,7 +8,6 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
-import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
@@ -34,7 +33,7 @@ public class SecurityConfig {
             .cors(cors -> cors.configurationSource(corsConfigurationSource())) // Enable CORS here
             .csrf(csrf -> csrf.disable())
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/auth/**", "/topic/**","/app/**", "/user/**").permitAll()
+                .requestMatchers("/**", "/api/auth/**", "/topic/**","/app/**", "/user/**").permitAll()
                 .requestMatchers("/ws-endpoint/**").permitAll() 
                 .anyRequest().authenticated()
             )

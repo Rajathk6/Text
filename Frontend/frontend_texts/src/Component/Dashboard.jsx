@@ -3,9 +3,11 @@ import { useLocation } from "react-router-dom";
 import SockJS from "sockjs-client";
 import { Client } from "@stomp/stompjs";
 import toast, { Toaster } from "react-hot-toast";
-import ApiMapping from "../Config/ApiMapping";
+import apiUrl from "../Config/ApiMapping";
 import FriendsList from "./FriendsList";
 import ChatArea from "./ChatArea";
+
+const wsUrl = `${apiUrl}/ws-endpoint`
 
 // Helper function to format timestamps safely
 const formatTimestamp = (timestamp) => {
@@ -53,7 +55,7 @@ function Dashboard() {
     // Fetch friends list
     const friendListRetrieval = async () => {
         try {
-            const friendresponse = await ApiMapping.post(
+            const friendresponse = await apiUrl.post(
                 "/api/dashboard/friends",
                 {},
                 {
@@ -91,7 +93,7 @@ function Dashboard() {
         if (!conversationKey) return; // Don't fetch if key is invalid
 
         try {
-            const response = await ApiMapping.get(
+            const response = await apiUrl.get(
                 `/api/messages/conversation?user1=${encodeURIComponent(user1)}&user2=${encodeURIComponent(user2)}`,
                 {
                     headers: {
@@ -139,7 +141,7 @@ function Dashboard() {
         }
 
         const client = new Client({
-            webSocketFactory: () => new SockJS(ApiMapping/ws-endpoint),
+            webSocketFactory: () => new SockJS(wsUrl),
             connectHeaders: {
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
                 login: username,

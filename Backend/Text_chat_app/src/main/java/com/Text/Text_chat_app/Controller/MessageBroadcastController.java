@@ -11,7 +11,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.web.socket.messaging.SessionSubscribeEvent;
 
 import com.Text.Text_chat_app.Model.MessageRequest;
-import com.Text.Text_chat_app.Model.message;
+import com.Text.Text_chat_app.Model.Message;
 import com.Text.Text_chat_app.Repository.MessageRepo;
 
 @Controller
@@ -32,7 +32,7 @@ public class MessageBroadcastController {
     @MessageMapping("/chat.private") // chat.private is to where the frontend publishes the message
     public void privateMessage(@Payload MessageRequest messageRequest) {
         // Save the message received from the frontend
-        message newMessage = new message();
+        Message newMessage = new Message();
         newMessage.setSender(messageRequest.getSender());
         newMessage.setReceiver(messageRequest.getReceiver());
         newMessage.setContent(messageRequest.getContent());
@@ -55,7 +55,7 @@ public class MessageBroadcastController {
     @MessageMapping("/chat.public")
     public void publicMessage(@Payload MessageRequest messageRequest) {
     
-        message newMessage = new message();
+        Message newMessage = new Message();
         newMessage.setSender(messageRequest.getSender());
         newMessage.setReceiver("GROUP"); 
         newMessage.setContent(messageRequest.getContent());
