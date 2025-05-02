@@ -426,13 +426,14 @@ html, body {
 
 .user-info {
   background: #ffffff;
-  height: 11vh;
+  height: 8vh;
   border-left: 1px solid #f7f7f7;
   width: 100%;
   display: flex;
   position: absolute;
   align-items: center;
   gap: 5px;
+  margin-top: 0.5rem;
 } 
 
 .user-info button {
@@ -478,7 +479,7 @@ html, body {
   flex-direction: column-reverse; 
   margin-top: 85px;
   margin-bottom: 60px;
-  height: calc(100vh - 150px);
+  height: calc(100vh - 160px);
   overflow-y: auto;  
   scroll-behavior: smooth;       
   padding: 10px;  
@@ -524,6 +525,7 @@ html, body {
                     ======================== */
       
 .text-area {
+  margin-bottom: 2rem;
   position: absolute;
   bottom: 0;
   left: 0;
