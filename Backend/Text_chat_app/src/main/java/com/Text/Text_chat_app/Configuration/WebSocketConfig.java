@@ -20,7 +20,7 @@ public class WebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         // ======= dont forget to change it to the actual url in deployment ========
-        registry.addEndpoint("/ws-endpoint").setAllowedOriginPatterns(ProductionConfig.FRONTENT_URL).withSockJS()
+        registry.addEndpoint("/ws-endpoint").setAllowedOriginPatterns(ProductionConfig.FRONTEND_URL).withSockJS()
         .setWebSocketEnabled(true);
     }
 }
