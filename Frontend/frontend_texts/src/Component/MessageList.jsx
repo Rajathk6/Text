@@ -26,7 +26,12 @@ function MessageList({ messages, username }) {
                     )}
                     
                     {message.type === "text" ? (
-                        <span>{message.content}</span>
+                        <span className="incoming-message" style={{
+                            wordBreak: 'break-word',
+                            overflowWrap: 'break-word',
+                            whiteSpace: 'pre-wrap',
+                        }}>
+                            {message.content}</span>
                     ) : message.type === "gif" ? (
                         <img src={message.content} alt="GIF" style={{width: "200px"}}/>
                     ) : (

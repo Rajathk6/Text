@@ -3,6 +3,7 @@ import ApiMapping from "../Config/ApiMapping";
 import toast, { Toaster } from "react-hot-toast";
 import { useNavigate } from "react-router-dom";
 import './LoginPage.css';
+import apiUrl from "../Config/ApiMapping";
 
 function LoginPage() {
     const [username, setUsername] = useState("");
@@ -36,7 +37,7 @@ function LoginPage() {
         const errorMessage = isLogin ? "Invalid credentials. Please try again." : "Username already exists!";
     
         try {
-            const responsePromise = ApiMapping.post(apiEndpoint, { username, password }, {
+            const responsePromise = apiUrl.post(apiEndpoint, { username, password }, {
                 headers: { "Content-Type": "application/json" }
             });
             
@@ -72,7 +73,7 @@ function LoginPage() {
             <div className="main-auth-container">
                 
             <div className="app-logo">
-                <img src="/textLogo.png" alt="Text Logo" />
+                <img src="/TextLogo.png" alt="Text Logo" />
             </div>
 
             <div className="auth-form-container">

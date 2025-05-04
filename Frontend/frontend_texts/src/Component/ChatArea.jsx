@@ -13,8 +13,8 @@ function ChatArea({
     onMessageSend, 
     onGifSelect,
     chatDisplayRef,
-    onBack,
-    smallScreen
+    smallScreenFirst,
+    setSmallScreenFirst
 }) {
     const [isGif, setIsGif] = useState(false);
     const [isEmoji, setIsEmoji] = useState(false);
@@ -79,35 +79,26 @@ function ChatArea({
         if (messageContent) {
             onMessageSend(messageContent);
         }
+        console.log("inside chatArea:", smallScreenFirst);
     }
 
     return (
         <div className="user-chat" 
-            style={{display: window.innerWidth > 480 ? "flex" : !smallScreen ? "flex" : "flex"}}
+            style={{display: window.innerWidth > 480 ? "flex" : smallScreenFirst ? "none" : "flex"}}
         >
             <ChatHeader 
                 username={username}
                 currentFriend={currentFriend}
-                onBack={onBack}
+                setSmallScreenFirst={setSmallScreenFirst}
+                smallScreenFirst={smallScreenFirst}
             />
 
             <div className="chat-display" ref={chatDisplayRef}>
                 {/* GIF picker */}
-                <div 
+                <div className="handlegifbox"
                     ref={gifRef}
                     style={{
                         display: isGif ? "grid" : "none",
-                        gridTemplateColumns: "repeat(2, 0.3fr)", // 👈 creates 3 equal columns
-                        gap: "10px", // 👈 space between grid items
-                        position: "fixed",
-                        left: "350px",
-                        top: "10px",
-                        width: "31%",
-                        height: "30em",
-                        overflowY: "auto",
-                        zIndex: 10,
-                        borderRadius: "10px",
-                        padding: "10px"
                     }}
                 >
                     <GifPicker 
@@ -115,29 +106,21 @@ function ChatArea({
                         contentFilter="off" 
                         onGifClick={onGifSelect} 
                         theme="light"
-                        height="100%"
-                        
+                        className="custom-gif-picker"                        
                     />
                 </div>
 
                 {/* Emoji picker */}
-                <div 
+                <div className="HandleEmojibox"
                     ref={emojiRef}
                     style={{
                         display: isEmoji ? "block" : "none",
-                        position: "fixed", 
-                        left: "350px",
-                        top: "10px",
-                        bottom: "80px",
-                        zIndex: 10,
-                        borderRadius: "10px",
-                        padding: "10px"
+                        
                     }}
                 >
                     <EmojiPicker 
                         onEmojiClick={handleEmojiSelect} 
-                        height="100%" 
-                        width="30em"
+                        className="custom-emoji-picker"
                     />
                 </div>
 

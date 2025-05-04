@@ -3,12 +3,11 @@ import { FiSearch } from "react-icons/fi";
 import { RxAvatar } from "react-icons/rx";
 import apiUrl from "../Config/ApiMapping";
 
-const truncateText = (text, maxLength = 30) => {
-  if (!text) return "";
-  return text.length > maxLength ? text.substring(0, maxLength) + "..." : text;
-};
-
-function FriendsList({ friends, currentFriend, setCurrentFriend, setSmallScreen, smallScreen }) {
+function FriendsList(
+  { 
+    friends, currentFriend, setCurrentFriend, setSmallScreen, smallScreen, setSmallScreenFirst, smallScreenFirst, unread, setUnread
+  }
+  ) {
   const [searchTerm, setSearchTerm] = useState("");
   const [globalResults, setGlobalResults] = useState([]);
 
@@ -42,11 +41,22 @@ function FriendsList({ friends, currentFriend, setCurrentFriend, setSmallScreen,
       setGlobalResults([]);
     }
   }, [searchTerm, filteredFriends.length]);
+  console.log("inside friends List:", smallScreenFirst)
+
+  useEffect(() => {
+    if (currentFriend) {
+      setUnread((prev) => ({
+        ...prev, [currentFriend]: false
+      }))
+    }
+  }, [currentFriend])
 
   return (
+  
     <div className="dashboard-nav"
     style={{display: window.innerWidth > 480 ? "flex" : smallScreen ? "none" : "flex"}}
     >
+
       <p className="navigation-header">Messages...</p>
       
       <div className="available-friends">
@@ -58,6 +68,7 @@ function FriendsList({ friends, currentFriend, setCurrentFriend, setSmallScreen,
                 key={index} 
                 onClick={() => {
                   setCurrentFriend(friend)
+                  setSmallScreenFirst(false) // switches to Page 2
                   window.innerWidth < 480 ? setSmallScreen(true) : setSmallScreen(false)
                 }}
                 style={{
@@ -66,6 +77,8 @@ function FriendsList({ friends, currentFriend, setCurrentFriend, setSmallScreen,
                 }}
               >
                 <p className="friend-avatar"><RxAvatar /></p>{friend}
+                <p>{unread[friend] && currentFriend !== friend ? "🟢" : ""}</p>
+
               </li>
             ))
           ) : searchTerm.trim() !== "" && globalResults.length > 0 ? (
@@ -75,6 +88,7 @@ function FriendsList({ friends, currentFriend, setCurrentFriend, setSmallScreen,
                 key={user.id}
                 onClick={() => {
                   setCurrentFriend(user.username)
+                  setSmallScreenFirst(false)
                   window.innerWidth < 480 ? setSmallScreen(true) : setSmallScreen(false)
                 }}
                 style={{
@@ -83,6 +97,8 @@ function FriendsList({ friends, currentFriend, setCurrentFriend, setSmallScreen,
                 }}
               >
                 <p className="friend-avatar"><RxAvatar /></p>{user.username}
+                <p>{unread[user.username] && currentFriend !== user.username ? "🟢" : ""}</p>
+
               </li>
             ))
           ) : (
