@@ -1,4 +1,4 @@
-# 💬 Text – Real Time Chat Application 
+# 💬 [Text – Real Time Chat Application](texts.sbs) 
 
 A full-stack, real-time one-on-one messaging web application designed to deliver instant communication using WebSocket. It features a mobile-responsive frontend and persistent chat history.
 
