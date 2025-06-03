@@ -4,7 +4,7 @@ Text is a real-time one-on-one chat application designed to offer instant and se
 
 ### 🌐 Live Demo
 
-🔗 **Website:** [Texts](texts.sbs)
+🔗 **Website:** [Text](texts.sbs)
 
 ### 🚀 **Features**
 ✅ **One-on-One Real-Time Messaging**
