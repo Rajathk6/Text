@@ -41,9 +41,11 @@ function Dashboard() {
     const [currentFriend, setCurrentFriend] = useState(null);
     const [messages, setMessages] = useState({}); // Central state for all messages
     const [smallScreen, setSmallScreen] = useState(false);
-    console.log(smallScreen);
+    const [smallScreenFirst, setSmallScreenFirst] = useState(true);
+    const [unread, setUnread] = useState({});
     const stompClientRef = useRef(null);
     const chatDisplayRef = useRef(null);
+
 
     const getConversationKey = (user1, user2) => {
         if (!user1 || !user2) return null; 
@@ -137,9 +139,8 @@ function Dashboard() {
             toast.error("Username not found. Please login again.");
             return;
         }
-        console.log("above web socket within useEffect")
         const client = new Client({
-            webSocketFactory: () => new SockJS("https://api.texts.sbs/ws-endpoint"),
+            webSocketFactory: () => new SockJS(apiUrl,"/ws-endpoint"),
             connectHeaders: {
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
                 login: username,
@@ -151,7 +152,7 @@ function Dashboard() {
         console.log("inside web socket")
         client.onConnect = function() {
             console.log("connected");
-            toast.success("Connected to chat server!");
+            toast.success("Connected to chat server!", {duration: 2000,});
             const userQueue = `/user/${username}/messages`; 
             console.log(`Subscribing to: ${userQueue}`);
             client.subscribe(userQueue, handleIncomingMessage);
@@ -166,13 +167,13 @@ function Dashboard() {
 
         client.onWebSocketClose = (event) => {
              console.log("WebSocket closed", event);
-             toast.error("Disconnected from chat server");
+             toast.error("Disconnected from chat server", {duration: 2000,});
         };
 
         client.onWebSocketError = (error) => {
             setConnectionStatus("error");
             console.error("WebSocket error:", error);
-            toast.error("WebSocket connection error");
+            toast.error("WebSocket connection error", {duration: 2000,});
         };
 
         stompClientRef.current = client;
@@ -234,10 +235,12 @@ function Dashboard() {
 
             // Notification for messages from others when not in that conversation
             if (messageData.sender !== username && messageData.sender !== currentFriend) {
-                toast(`New message from ${messageData.sender}`, {
-                    icon: '📝'
-                });
+                window.innerWidth < 480 ? toast(`new message from ${messageData.sender}`, {icon: "📫"}) : ""
+                setUnread((prev) => ({
+                    ...prev, [messageData.sender]: true
+                }))
             }
+
         } catch (error) {
             console.error("Error handling incoming message:", error);
             console.error("Failed message body:", message?.body); // Log raw body on error
@@ -387,30 +390,66 @@ function Dashboard() {
     return (
         <div className="parent-dashboard">
             <Toaster position="top-right" />
-            {/* <ConnectionStatus status={connectionStatus} /> */}
-
-            <FriendsList
-                friends={friends}
-                currentFriend={currentFriend}
-                setCurrentFriend={setCurrentFriend}
-                username={username}
-                setSmallScreen={setSmallScreen}
-                smallScreen={smallScreen}
-                messages={displayedMessages}
-            />
-
-            <ChatArea
-                username={username}
-                currentFriend={currentFriend}
-                messages={displayedMessages} 
-                smallScreen={smallScreen}
-                // connectionStatus={connectionStatus}
-                onMessageSend={handleMessageSent}
-                onGifSelect={handleGifSelect}
-                chatDisplayRef={chatDisplayRef}
-            />
+            
+            {window.innerWidth < 480 && smallScreenFirst ? (
+                <FriendsList
+                    friends={friends}
+                    currentFriend={currentFriend}
+                    setCurrentFriend={(friend) => {
+                        setCurrentFriend(friend);
+                        setSmallScreenFirst(false);
+                    }}
+                    unread={unread}
+                    setUnread={setUnread}
+                    username={username}
+                    smallScreen={smallScreen}
+                    smallScreenFirst={smallScreenFirst}
+                    setSmallScreenFirst={setSmallScreenFirst}
+                />
+            ) : window.innerWidth < 480 ? (
+                <ChatArea
+                    username={username}
+                    currentFriend={currentFriend}
+                    messages={displayedMessages}
+                    smallScreen={smallScreen}
+                    smallScreenFirst={smallScreenFirst}
+                    setSmallScreenFirst={setSmallScreenFirst}
+                    onMessageSend={handleMessageSent}
+                    onGifSelect={handleGifSelect}
+                    chatDisplayRef={chatDisplayRef}
+                />
+            ) : (
+                <>
+                    <FriendsList
+                        friends={friends}
+                        currentFriend={currentFriend}
+                        setCurrentFriend={(friend) => {
+                            setCurrentFriend(friend);
+                            setSmallScreenFirst(false);
+                        }}
+                        unread={unread}
+                        setUnread={setUnread}
+                        username={username}
+                        smallScreen={smallScreen}
+                        smallScreenFirst={smallScreenFirst}
+                        setSmallScreenFirst={setSmallScreenFirst}
+                    />
+                    <ChatArea
+                        username={username}
+                        currentFriend={currentFriend}
+                        messages={displayedMessages}
+                        smallScreen={smallScreen}
+                        smallScreenFirst={smallScreenFirst}
+                        setSmallScreenFirst={setSmallScreenFirst}
+                        onMessageSend={handleMessageSent}
+                        onGifSelect={handleGifSelect}
+                        chatDisplayRef={chatDisplayRef}
+                    />
+                </>
+            )}
         </div>
     );
+    
 }
 
 export default Dashboard;

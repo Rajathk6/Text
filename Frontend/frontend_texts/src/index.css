@@ -224,6 +224,39 @@ html, body {
   border-radius: 10px;
 }
 
+.custom-emoji-picker {
+  width: 30em;
+  height: 100%;
+}
+
+.HandleEmojibox {
+  position: fixed;
+  left: 350px;
+  top: 10px;
+  bottom: 80px;
+  z-index: 10;
+  border-radius: 10px;
+  padding: 10px;
+}
+
+.custom-gif-picker {
+  height: 100%;
+}
+
+.handlegifbox {
+  grid-template-columns: repeat(2, 0.3fr); 
+  gap: 10px; 
+  position: fixed;
+  left: 350px;
+  top: 10px;
+  width: 31%;
+  height: 30em;
+  overflow-y: auto;
+  z-index: 10;
+  border-radius: 10px;
+  padding: 10px;
+}
+
 
                 /*  ========================
                         Bottom Text Area
@@ -310,16 +343,10 @@ html, body {
   }
   
   .form-attributes input {
-    margin: 7px 20px;
-    height: 2.5rem;
-    width: 16rem;
-    font-size: 1.1rem;
-  }
-  
-  .loginbutton {
-    height: 2.5rem;
-    font-size: 1.1rem;
-    width: 6rem;
+    margin: 7px 20px; 
+    height: 2.5rem; 
+    width: 16rem; 
+    font-size: 1.1rem; 
   }
   
   .dashboard-nav {
@@ -328,103 +355,61 @@ html, body {
     align-items: center;
     padding: 5px 0;
   }
-            /* PAGE 1 */
 
-  .parent-dashboard { 
-  display: flex;
-  background-color: #000000;
-  }
+  
+            /* PAGE 1 */
 
 .dashboard-nav {
   display: none;
-  flex-direction: column;
   min-width: 80vw; 
   width: 100vw;
-  height: 100vh;
-  background: #ffffff;
-  color: #000000;
-  box-shadow: 0 4px 10px rgba(255, 255, 255, 0.1), 0 2px 10px rgba(0, 0, 0, 0.2);
 }
 
-.navigation-header {
-  padding-bottom: 10px;
-  font-weight: bolder;
-  font-size: 1.8rem;
-  color: #144ddf;
-}     */
           /* Available friends */
 
- .available-friends {
-  flex: 1;
-  overflow-y: auto;
-  width: 100%;
+.available-friends {
+  flex: 1; 
+   overflow-y: auto; 
+   width: 100%;
 }
 
 .available-friends ul {
     width: 100vw;
-    margin-top: 10px;
     padding: 10px;
 }
 
 .friend-avatar {
-  padding-top: 15px;
   font-size: 2.5rem;
 }
 
 .available-friends li {
-  display: flex;
-  border-bottom: .3px solid #f7f7f7 ;
-  color: black;
-  height: 10vh;
-  padding-left: 12px;
-  align-items: center;
-  list-style: none;
-  font-size: 1.1em;
-  gap: 10px;
-  cursor: pointer;
+  font-size: 1em;
 }
 
 .search-friends {
-  border-top: 0.3px solid #f7f7f7;
-  height: 12.4vh;
-  display: flex;
-  align-items: center; 
-  justify-content: end;
-  gap: 5px;
-  width: 100%;
+  height: 11.4vh;
+  margin-bottom: 10px;
 }
 
 
 .search-friends button {
   margin-top: 5px;
   font-size: 1.1rem;
-  background: transparent;
-  border-style: none;
 }
 
 .search-friends input {
-  width: 100%;
   height: 10vh;
   font-size: 1rem;
-  outline: none;
-  transition: all 0.3s ease-in-out;
-  border: none;
 }
             /* PAGE 2 */
         /* INDIVIUAL CHAT AREA */
 
 .user-chat {
-  flex: 1;
-  height: 100vh;
-  min-width: 0;
   width: 100vw;
-  background: #f6f8fc;
-  border-left: 1px solid #f7f7f7;
-  flex-direction: column;
-  position: relative;
 }
 
 .user-info {
+<<<<<<< HEAD
   background: #ffffff;
   height: 8vh;
   border-left: 1px solid #f7f7f7;
@@ -434,46 +419,24 @@ html, body {
   align-items: center;
   gap: 5px;
   margin-top: 0.5rem;
+=======
+  margin-top: 8px;
+>>>>>>> deployment
 } 
 
-.user-info button {
-  background: transparent;
-  border-style: none;
-  font-size: 2rem;
-}
-
-.user-status {
-  display: flex;  
-  flex-direction: column; 
-  align-items: flex-start; 
-  justify-content: center;
-  margin-top: 5px;
-  gap: 2px;
-}
-
-.user-status h3, p {
-  margin: 0;
-}
-
 .user-status h3 {
-  font-size: 1.2rem;
-  margin-top: -10px;
+  font-size: 1rem;
 }
 
 .user-info .avatar {
-  font-size: 3rem;
-  padding-top: 10px;
+  font-size: 2.7rem;
 }
-
-.user-info .search-text {
-  margin-left: 90vh;
-}
-
 
               /*  ========================
                           Chat Area
                   ======================== */
 
+<<<<<<< HEAD
 .chat-display {
   display: flex;
   flex-direction: column-reverse; 
@@ -485,46 +448,48 @@ html, body {
   padding: 10px;  
   scrollbar-width: thin;
   scrollbar-color: transparent transparent;
+=======
+.HandleEmojibox {
+  width: 100%;           
+  height: 72%;         
+  left: 0%;             
+  top: auto;
+  bottom: 60px;          
+  margin: 0 auto;
+  position: fixed;       
+  z-index: 999;          
+  overflow-y: auto;        
+>>>>>>> deployment
 }
 
-.messages-container {
-  display: flex;
-  flex-direction: column;
+.custom-emoji-picker {
+  width: 80vw;  
+  height: 300px;
 }
 
-.sender-header{
-  display: flex;
-  flex-direction: column;
-  justify-content: end;
-  align-items: flex-end;
-  list-style: none;
-  max-width: 100%;
-  min-width: 0;
-  
-}
-
-.sender li {
-  display: block; 
-  position: static;
-  margin-right: -5px;
-  margin-bottom: 5px;
-  width: auto;
-  max-width: 80%;
-  min-width: 0; 
-  overflow-wrap: break-word;
-  word-break: break-word;
-  white-space: normal;
-  background: linear-gradient(170deg, #81c0d5, #73a3b4);
-  padding: 10px;
+.handlegifbox {
+  grid-template-columns: repeat(2, 0.3fr); 
+  gap: 10px; 
+  position: fixed;
+  left: 0px;
+  top: auto;
+  width: 100%;
+  height: 25em;
+  overflow-y: auto;
+  z-index: 10;
   border-radius: 10px;
 }
 
+.incoming-message {
+  font-size: 0.8rem;
+}
 
                 /*  ========================
                         Bottom Text Area
                     ======================== */
       
 .text-area {
+<<<<<<< HEAD
   margin-bottom: 2rem;
   position: absolute;
   bottom: 0;
@@ -559,11 +524,13 @@ html, body {
   background-color: transparent;
   padding-left: 5px;
   padding-right: 5px;
+=======
+  bottom: 7px; 
+>>>>>>> deployment
 }
 
 .text-area-icons {
   font-size: 1.7rem;
-  cursor: pointer;
 }
 
 .gif {
