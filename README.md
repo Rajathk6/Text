@@ -1,6 +1,6 @@
 # 💬 [Text – Real Time Chat Application](texts.sbs) 
 
-A full-stack, real-time one-on-one messaging web application designed to deliver instant communication using WebSocket. It features a mobile-responsive frontend and persistent chat history.
+Text is a real-time one-on-one chat application designed to offer instant and seamless communication through WebSocket technology. Developed as a full-stack web project, it combines a mobile-responsive React frontend with a Spring Boot backend, and uses Supabase (PostgreSQL) for storing and retrieving chat history.
 
 ### 🌐 Live Demo
 
