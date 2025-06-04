@@ -140,7 +140,7 @@ function Dashboard() {
             return;
         }
         const client = new Client({
-            webSocketFactory: () => new SockJS(apiUrl,"/ws-endpoint"),
+            webSocketFactory: () => new SockJS(`${import.meta.env.VITE_BASE_URL}/ws-endpoint`),
             connectHeaders: {
                 Authorization: `Bearer ${localStorage.getItem("token")}`,
                 login: username,
@@ -386,6 +386,11 @@ function Dashboard() {
             }, 50); // Small delay might be needed
         }
     }, [displayedMessages]); // Depend on the derived displayedMessages
+
+    const handleSmallScreen = (friend) => {
+        setCurrentFriend(friend);
+        setSmallScreenFirst(false);
+    }
 
     return (
         <div className="parent-dashboard">
