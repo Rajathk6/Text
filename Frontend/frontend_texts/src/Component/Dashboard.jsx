@@ -387,10 +387,12 @@ function Dashboard() {
         }
     }, [displayedMessages]); // Depend on the derived displayedMessages
 
-    const handleSmallScreen = (friend) => {
+    const handleFriendSelect = (friend) => {
         setCurrentFriend(friend);
         setSmallScreenFirst(false);
-    }
+        if (window.innerWidth < 480) setSmallScreen(true);
+        else setSmallScreen(false);
+    };
 
     return (
         <div className="parent-dashboard">
@@ -400,10 +402,7 @@ function Dashboard() {
                 <FriendsList
                     friends={friends}
                     currentFriend={currentFriend}
-                    setCurrentFriend={(friend) => {
-                        setCurrentFriend(friend);
-                        setSmallScreenFirst(false);
-                    }}
+                    onFriendSelect={handleFriendSelect}
                     unread={unread}
                     setUnread={setUnread}
                     username={username}
@@ -428,10 +427,7 @@ function Dashboard() {
                     <FriendsList
                         friends={friends}
                         currentFriend={currentFriend}
-                        setCurrentFriend={(friend) => {
-                            setCurrentFriend(friend);
-                            setSmallScreenFirst(false);
-                        }}
+                        onFriendSelect={handleFriendSelect}
                         unread={unread}
                         setUnread={setUnread}
                         username={username}

@@ -5,7 +5,7 @@ import apiUrl from "../Config/ApiMapping";
 
 function FriendsList(
   { 
-    friends, currentFriend, setCurrentFriend, setSmallScreen, smallScreen, setSmallScreenFirst, smallScreenFirst, unread, setUnread
+    friends, currentFriend, onFriendSelect, setSmallScreen, smallScreen, setSmallScreenFirst, smallScreenFirst, unread, setUnread
   }
   ) {
   const [searchTerm, setSearchTerm] = useState("");
@@ -66,11 +66,7 @@ function FriendsList(
             filteredFriends.map((friend , index) => (
               <li 
                 key={index} 
-                onClick={() => {
-                  setCurrentFriend(friend)
-                  setSmallScreenFirst(false) // switches to Page 2
-                  window.innerWidth < 480 ? setSmallScreen(true) : setSmallScreen(false)
-                }}
+                onClick={() => onFriendSelect(friend)}
                 style={{
                   backgroundColor: currentFriend === friend ? "#c2e7ff" : "",
                   cursor: "pointer"
@@ -86,11 +82,7 @@ function FriendsList(
             globalResults.map((user) => (
               <li 
                 key={user.id}
-                onClick={() => {
-                  setCurrentFriend(user.username)
-                  setSmallScreenFirst(false)
-                  window.innerWidth < 480 ? setSmallScreen(true) : setSmallScreen(false)
-                }}
+                onClick={() => onFriendSelect(user.username)}
                 style={{
                   backgroundColor: currentFriend === user.username ? "#c2e7ff" : "",
                   cursor: "pointer"
