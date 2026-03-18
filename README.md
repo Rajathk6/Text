@@ -33,4 +33,4 @@ Java, Spring Boot, Spring WebSocket, Supabase PostgreSQL
 Vite React.js
 
 🔹 **Deployment:**
-AWS EC2
+AWS EC2 
