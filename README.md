@@ -1,4 +1,4 @@
-# 💬 [Text – Real Time Chat Application](texts.sbs) 
+# 💬 [Text – Real Time Chat Application]([texts.sbs](https://texts.sbs/login)) 
 
 Text is a real-time one-on-one chat application designed to offer instant and seamless communication through WebSocket technology. Developed as a full-stack web project, it combines a mobile-responsive React frontend with a Spring Boot backend, and uses Supabase (PostgreSQL) for storing and retrieving chat history.
 
