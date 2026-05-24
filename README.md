@@ -1,10 +1,10 @@
-# 💬 [Text – Real Time Chat Application](https://texts.sbs/login)
+# 💬 [Text – Real Time Chat Application](https://textrealtimechat.netlify.app/login)
 
 Text is a real-time one-on-one chat application designed to offer instant and seamless communication through WebSocket technology. Developed as a full-stack web project, it combines a mobile-responsive React frontend with a Spring Boot backend, and uses Supabase (PostgreSQL) for storing and retrieving chat history.
 
 ### 🌐 Live Demo
 
-🔗 **Website:** [Text](https://texts.sbs/login)
+🔗 **Website:** [Text](https://textrealtimechat.netlify.app/login)
 ### 🚀 **Features**
 ✅ **One-on-One Real-Time Messaging**
 - Send and receive messages instantly with WebSocket integration.
